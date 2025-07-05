@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/chrome": "^0.0.329",
     "@types/mozilla__readability": "^0.4.2",
     "copyfiles": "^2.4.1",
     "esbuild": "^0.25.5",
