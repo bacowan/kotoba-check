@@ -1,0 +1,10 @@
+{
+    "name": "Kotoba Check",
+    "description": "A way to remember words that you have seen frequently.",
+    "version": "1.0",
+    "manifest_version": 3,
+    "action": {
+      "default_popup": "popup/popup.html",
+      "default_icon": "icon.png"
+    }
+  }
