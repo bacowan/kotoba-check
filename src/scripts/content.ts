@@ -1,5 +1,5 @@
 import { Readability } from "@mozilla/readability";
-//import kuromoji from "kuromoji";
+import TinySegmenter from "tiny-segmenter";
 
 const parse = async () => {
   // only parse the page if it hasn't been visited before
@@ -24,11 +24,6 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
 });
 
 
-/*kuromoji.builder({ dicPath: "node_modules/kuromoji/dict" }).build((err, tokenizer) => {
-  if (err) throw err;
-
-  const tokens = tokenizer.tokenize("ご飯を食べました");
-  tokens.forEach(token => {
-    console.log(token.surface_form, "→", token.basic_form); // 食べました → 食べる
-  });
-});*/
+const segmenter = new TinySegmenter();
+const result = segmenter.segment("今日はいい天気ですね。");
+console.log(result);

@@ -1,9 +1,5 @@
 import { build } from 'esbuild';
-import alias from 'esbuild-plugin-alias';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 (async () => {
     await build({

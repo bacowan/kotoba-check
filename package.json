@@ -15,12 +15,14 @@
   "devDependencies": {
     "@types/chrome": "^0.0.329",
     "@types/mozilla__readability": "^0.4.2",
+    "@types/tiny-segmenter": "^0.2.0",
     "copyfiles": "^2.4.1",
     "esbuild": "^0.25.5",
     "npm-run-all": "^4.1.5",
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@mozilla/readability": "^0.6.0"
+    "@mozilla/readability": "^0.6.0",
+    "tiny-segmenter": "^0.2.0"
   }
 }
