@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build:ts": "esbuild src/**/*.ts --bundle --outdir=dist --outbase=src",
+    "build:ts": "node esbuild.config.js",
     "build:static": "copyfiles -u 1 src/**/*.{html,css,json,png} dist",
-    "build": "npm-run-all build:ts build:static"
+    "build": "npm-run-all build:ts build:static",
+    "postinstall": "node .\\scripts\\clone-repo.js https://github.com/takuyaa/kuromoji.js master /external/kuromoji"
   },
   "keywords": [],
   "author": "",
