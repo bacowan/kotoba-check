@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "build:ts": "node esbuild.config.js",
-    "build:static": "copyfiles -u 1 src/**/*.{html,css,json,png} dist",
-    "build": "npm-run-all build:ts build:static",
+    "build": "node esbuild.config.js",
     "postinstall": "node .\\scripts\\clone-repo.js https://github.com/takuyaa/kuromoji.js master /external/kuromoji"
   },
   "keywords": [],
@@ -14,15 +13,15 @@
   "license": "ISC",
   "devDependencies": {
     "@types/chrome": "^0.0.329",
+    "@types/kuromoji": "^0.1.3",
     "@types/mozilla__readability": "^0.4.2",
-    "@types/tiny-segmenter": "^0.2.0",
     "copyfiles": "^2.4.1",
     "esbuild": "^0.25.5",
-    "npm-run-all": "^4.1.5",
+    "esbuild-plugin-alias": "^0.2.1",
+    "esbuild-plugin-copy": "^2.1.1",
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@mozilla/readability": "^0.6.0",
-    "tiny-segmenter": "^0.2.0"
+    "@mozilla/readability": "^0.6.0"
   }
 }

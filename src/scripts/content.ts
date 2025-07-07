@@ -1,5 +1,5 @@
 import { Readability } from "@mozilla/readability";
-import TinySegmenter from "tiny-segmenter";
+import kuromoji from "kuromoji";
 
 const parse = async () => {
   // only parse the page if it hasn't been visited before
@@ -24,6 +24,8 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
 });
 
 
-const segmenter = new TinySegmenter();
-const result = segmenter.segment("今日はいい天気ですね。");
-console.log(result);
+kuromoji.builder({ dicPath: chrome.runtime.getURL('dict') }).build(function (err, tokenizer) {
+    // tokenizer is ready
+    var path = tokenizer.tokenize("すもももももももものうち");
+    console.log(path);
+});
