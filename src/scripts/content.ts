@@ -1,16 +1,28 @@
 import { Readability } from "@mozilla/readability";
 import kuromoji from "kuromoji";
 
-const parse = () => {
+const addWordsToDictionary = async (words: kuromoji.IpadicFeatures[]) => {
+  const wordKeys = words.map(word => 'word_' + word.basic_form);
+  const wordCounts = await chrome.storage.local.get(wordKeys);
+  for (const key of wordKeys) {
+    if (wordCounts[key] === undefined) {
+      wordCounts[key] = 1;
+    }
+    else {
+      wordCounts[key]++;
+    }
+  }
+  await chrome.storage.local.set(wordCounts);
+}
+
+const parse = async () => {
   const article = new Readability(document.cloneNode(true) as Document).parse();
   if (article) {
     kuromoji.builder({ dicPath: chrome.runtime.getURL('dict') }).build(function (err, tokenizer) {
-      // tokenizer is ready
       const title = tokenizer.tokenize(article.title);
       const content = tokenizer.tokenize(article.textContent);
-      console.log("start");
-      console.log(title);
-      console.log(content);
+      addWordsToDictionary(title);
+      addWordsToDictionary(content);
     });
   }
 }
@@ -23,7 +35,7 @@ const checkPage = async () => {
 
   if (!wasVisited[visitedKey]) {
     await chrome.storage.local.set({ [visitedKey]: true });
-    parse();
+    await parse();
   }
 }
 
