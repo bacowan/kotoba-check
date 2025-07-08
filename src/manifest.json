@@ -35,7 +35,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "dict/*"
+        "dict/*",
+        "visualizer/index.html"
       ],
       "matches": [
         "<all_urls>"
