@@ -1,8 +1,31 @@
 import { Readability } from "@mozilla/readability";
 import kuromoji from "kuromoji";
 
+const includedPartsOfSpeech = [
+  "名詞",
+  "連体詞",
+  "動詞",
+  "接続詞",
+  "形容詞",
+  "副詞",
+  "接頭詞",
+  "感動詞"
+]
+
+const excludedPosDetail = [
+  "非自立",
+  "接尾"
+]
+
 const addWordsToDictionary = async (words: kuromoji.IpadicFeatures[]) => {
-  const wordKeys = words.map(word => 'word_' + word.basic_form);
+  const wordKeys = words
+    .filter(word =>
+      word.word_type === "KNOWN" &&
+      includedPartsOfSpeech.includes(word.pos) &&
+      !excludedPosDetail.includes(word.pos_detail_1) &&
+      !excludedPosDetail.includes(word.pos_detail_2) &&
+      !excludedPosDetail.includes(word.pos_detail_3))
+    .map(word => 'word_' + word.basic_form);
   const wordCounts = await chrome.storage.local.get(wordKeys);
   for (const key of wordKeys) {
     if (wordCounts[key] === undefined) {
