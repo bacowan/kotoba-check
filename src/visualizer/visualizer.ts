@@ -41,6 +41,12 @@ const setup = async () => {
 
         rowElement.appendChild(barContainer);
 
+        const removeButton = document.createElement('button');
+        removeButton.textContent = '－';
+        removeButton.className = 'add-button';
+        removeButton.onclick = async () => await addWord(word);
+        rowElement.appendChild(removeButton);
+
         const addButton = document.createElement('button');
         addButton.textContent = '＋';
         addButton.className = 'add-button';
