@@ -6,8 +6,6 @@ window.addEventListener('load', () => {
     });
 
     document.getElementById('options-button')?.addEventListener('click', () => {
-        chrome.tabs.create({
-            url: chrome.runtime.getURL('options/options.html')
-        });
+        chrome.runtime.openOptionsPage();
     });
 });
