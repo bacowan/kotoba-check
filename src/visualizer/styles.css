@@ -1,0 +1,93 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+header {
+  padding: 12px;
+  background-color: #f1f1f1;
+  text-align: center;
+  border-bottom: 1px solid #ccc;
+  flex-shrink: 0;
+}
+
+.word-list {
+  padding: 10px;
+  overflow-y: auto;
+  flex-grow: 1;
+  background-color: #fff;
+}
+
+.word-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+
+.word {
+  flex: 0 0 100px;
+  font-weight: 500;
+}
+
+.word-count {
+  flex: 0 0 30px;
+}
+
+.bar-container {
+  flex: 1;
+  height: 12px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background-color: #4285f4;
+  border-radius: 6px;
+}
+
+.add-button {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  font-size: 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-button:hover {
+  background-color: #388e3c;
+}
+
+footer {
+  padding: 12px;
+  border-top: 1px solid #ccc;
+  background-color: #f9f9f9;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.deck-button {
+  padding: 10px 20px;
+  font-size: 14px;
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.deck-button:hover {
+  background-color: #303f9f;
+}
