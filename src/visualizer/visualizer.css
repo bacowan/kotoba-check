@@ -24,7 +24,7 @@ main {
 }
 
 .table-container {
-  padding: 12px;
+  margin: 12px;
   height: 100%;
   overflow-y: auto;
 }
@@ -39,6 +39,16 @@ thead th, tbody td {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f9f9f9;
+  z-index: 2;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  text-align: left;
 }
 
 #word-header {
