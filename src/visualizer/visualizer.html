@@ -4,35 +4,19 @@
   <meta charset="UTF-8">
   <title>Kotoba Check</title>
   <link rel="stylesheet" href="visualizer.css">
+  <script src="visualizer.js" defer></script>
 </head>
 <body>
   <header>
     <h1>Kotoba Check</h1>
   </header>
 
-  <main class="word-list">
-    <!-- Example words, replace dynamically as needed -->
-    <div class="word-row">
-      <span class="word">ありがとう</span>
-      <span class="word-count">20</span>
-      <div class="bar-container"><div class="bar" style="width: 80%;"></div></div>
-      <button class="add-button">＋</button>
-    </div>
-    <div class="word-row">
-      <span class="word">こんにちは</span>
-      <span class="word-count">200</span>
-      <div class="bar-container"><div class="bar" style="width: 60%;"></div></div>
-      <button class="add-button">＋</button>
-    </div>
-    <!-- Add more rows here -->
+  <main id="word-list" class="word-list">
+    
   </main>
 
   <footer>
     <button class="deck-button">📘 View Deck</button>
   </footer>
-
-  <script>
-    // Optional: You could add JS here to populate the list or handle button clicks
-  </script>
 </body>
 </html>
