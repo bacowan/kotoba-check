@@ -1,7 +1,7 @@
 window.addEventListener('load', () => {
     document.getElementById('review-button')?.addEventListener('click', () => {
         chrome.tabs.create({
-            url: chrome.runtime.getURL('visualizer/index.html')
+            url: chrome.runtime.getURL('visualizer/visualizer.html')
         });
     });
 

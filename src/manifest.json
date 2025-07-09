@@ -40,7 +40,7 @@
     {
       "resources": [
         "dict/*",
-        "visualizer/index.html"
+        "visualizer/visualizer.html"
       ],
       "matches": [
         "<all_urls>"
