@@ -42,7 +42,7 @@ const setup = async () => {
         removeButton.onclick = async () => await addWord(word);
         removeRow.appendChild(removeButton);
         row.appendChild(removeRow);
-
+        
         const addRow = document.createElement('td');
         const addButton = document.createElement('button');
         addButton.textContent = '＋';
