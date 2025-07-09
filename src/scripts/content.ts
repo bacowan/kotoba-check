@@ -28,11 +28,18 @@ const addWordsToDictionary = async (words: kuromoji.IpadicFeatures[]) => {
     .map(word => 'word_' + word.basic_form);
   const wordCounts = await chrome.storage.local.get(wordKeys);
   for (const key of wordKeys) {
-    if (wordCounts[key] === undefined) {
-      wordCounts[key] = 1;
+    const wordCount = wordCounts[key];
+    if (wordCount === undefined) {
+      wordCounts[key] = {
+        count: 1,
+        state: CardState.Listed
+      };
     }
     else {
-      wordCounts[key]++;
+      wordCounts[key] = {
+        count: wordCount.count + 1,
+        state: wordCount.inDeck
+      }
     }
   }
   await chrome.storage.local.set(wordCounts);
