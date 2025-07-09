@@ -11,12 +11,26 @@
     <h1>Kotoba Check</h1>
   </header>
 
-  <main id="word-list" class="word-list">
-    
+  <main>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th id="word-header">Word</th>
+            <th id="frequency-header">Frequency</th>
+            <th id="add-header"></th>
+            <th id="remove-header"></th>
+          </tr>
+        </thead>
+        <tbody id="word-list">
+        </tbody>
+      </table>
+    </div>
   </main>
 
   <footer>
-    <button class="deck-button">📘 View Deck</button>
+    <button class="deck-button">View Deck</button>
+    <button class="deck-button">Options</button>
   </footer>
 </body>
 </html>

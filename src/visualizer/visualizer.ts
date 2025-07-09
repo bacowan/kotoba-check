@@ -18,36 +18,40 @@ const setup = async () => {
     const maxCount = words.length > 0 ? words[0].count : 1;
 
     for (const { word, count } of words) {
-        const rowElement = document.createElement('div');
-        rowElement.className = 'word-row';
+        const row = document.createElement('tr');
         
-        const wordElement = document.createElement('span');
-        wordElement.className = 'word';
-        wordElement.textContent = word;
-        rowElement.appendChild(wordElement);
+        const wordCell = document.createElement('td');
+        wordCell.textContent = word;
+        row.appendChild(wordCell);
 
-        const countElement = document.createElement('span');
-        countElement.className = 'word-count';
-        countElement.textContent = count;
-        rowElement.appendChild(countElement);
-
+        const barCell = document.createElement('td');
         const barContainer = document.createElement('div');
         barContainer.className = 'bar-container';
-
+        barContainer.title = count;
         const barElement = document.createElement('div');
         barElement.className = 'bar';
-        barElement.style.width = `${count / maxCount * 100}%`; // Scale width to a max of 100%
+        barElement.style.width = `${count / maxCount * 100}%`;
         barContainer.appendChild(barElement);
+        barCell.appendChild(barContainer);
+        row.appendChild(barCell);
 
-        rowElement.appendChild(barContainer);
+        const removeRow = document.createElement('td');
+        const removeButton = document.createElement('button');
+        removeButton.textContent = '－';
+        removeButton.className = 'remove-button';
+        removeButton.onclick = async () => await addWord(word);
+        removeRow.appendChild(removeButton);
+        row.appendChild(removeRow);
 
+        const addRow = document.createElement('td');
         const addButton = document.createElement('button');
         addButton.textContent = '＋';
         addButton.className = 'add-button';
         addButton.onclick = async () => await addWord(word);
-        rowElement.appendChild(addButton);
+        addRow.appendChild(addButton);
+        row.appendChild(addRow);
 
-        wordListElement.appendChild(rowElement);
+        wordListElement.appendChild(row);
     }
 };
 

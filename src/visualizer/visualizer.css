@@ -18,43 +18,55 @@ header {
   flex-shrink: 0;
 }
 
-.word-list {
-  padding: 10px;
-  overflow-y: auto;
+main {
   flex-grow: 1;
-  background-color: #fff;
+  overflow: hidden;
 }
 
-.word-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  gap: 8px;
+.table-container {
+  padding: 12px;
+  height: 100%;
+  overflow-y: auto;
 }
 
-.word {
-  flex: 0 0 100px;
-  font-weight: 500;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
-.word-count {
-  flex: 0 0 30px;
+thead th, tbody td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#word-header {
+  width: 100px;
+}
+
+#remove-header, #add-header {
+  width: 40px;
 }
 
 .bar-container {
-  flex: 1;
   height: 12px;
   overflow: hidden;
+  position: relative;
+  width: 100%;
 }
 
 .bar {
   height: 100%;
-  background-color: #4285f4;
   border-radius: 6px;
+  background-color: #4285f4;
 }
 
-.add-button {
-  flex-shrink: 0;
+.add-button,
+.remove-button {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
   padding: 4px 10px;
   font-size: 16px;
   background-color: #4caf50;
@@ -65,8 +77,16 @@ header {
   transition: background-color 0.2s ease;
 }
 
+.remove-button {
+  background-color: #e53935;
+}
+
 .add-button:hover {
   background-color: #388e3c;
+}
+
+.remove-button:hover {
+  background-color: #c62828;
 }
 
 footer {
