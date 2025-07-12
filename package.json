@@ -5,8 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "node esbuild.config.js",
-    "postinstall": "node .\\scripts\\clone-repo.js https://github.com/takuyaa/kuromoji.js master /external/kuromoji"
+    "build": "node esbuild.config.js"
   },
   "keywords": [],
   "author": "",
