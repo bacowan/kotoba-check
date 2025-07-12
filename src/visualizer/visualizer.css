@@ -51,11 +51,11 @@ thead th {
   text-align: left;
 }
 
-#word-header {
+.word-header {
   width: 100px;
 }
 
-#remove-header, #add-header {
+.remove-header, .add-header {
   width: 40px;
 }
 

@@ -1,6 +1,6 @@
 import { CardState } from "../common/enums";
 
-const setup = async () => {
+const setupList = async () => {
     const wordListElement = document.getElementById('word-list');
     if (!wordListElement) {
         console.error('Word list element not found');
@@ -87,4 +87,10 @@ const setWordState = async (word: string, count: number, state: CardState) => {
     );
 }
 
-setup();
+setupList();
+
+const dialog = document.getElementById("deck-dialog") as HTMLDialogElement;
+const viewDeckButton = document.getElementById("view-deck-button");
+if (dialog !== null && viewDeckButton !== null) {
+    viewDeckButton.onclick = () => dialog.showModal();
+}
