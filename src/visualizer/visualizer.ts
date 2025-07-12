@@ -1,5 +1,8 @@
 import { CardState } from "../common/enums";
 
+const wordListElement = document.getElementById('word-list');
+const deckListElement = document.getElementById('deck-list');
+
 const getWordsOfState = (allData: {[key: string]: any}, state: CardState): {
         word: string;
         count: any;
@@ -16,7 +19,6 @@ const getWordsOfState = (allData: {[key: string]: any}, state: CardState): {
 }
 
 const setupList = async (allData: {[key: string]: any}) => {
-    const wordListElement = document.getElementById('word-list');
     if (!wordListElement) {
         console.error('Word list element not found');
         return;
@@ -61,6 +63,7 @@ const setupList = async (allData: {[key: string]: any}) => {
         addButton.className = 'add-button';
         addButton.onclick = async () => {
             await setWordState(word, count, CardState.InDeck);
+            addWordToDeckDialog(word);
             row.remove();
         }
         addCell.appendChild(addButton);
@@ -92,6 +95,26 @@ const setWordState = async (word: string, count: number, state: CardState) => {
     );
 }
 
+const addWordToDeckDialog = (word: string) => {
+    const row = document.createElement('tr');
+    
+    const wordCell = document.createElement('td');
+    wordCell.textContent = word;
+    row.appendChild(wordCell);
+
+    const removeCell = document.createElement('td');
+    const removeButton = document.createElement('button');
+    removeButton.textContent = '－';
+    removeButton.className = 'remove-button';
+    removeButton.onclick = async () => {
+        // todo
+    }
+    removeCell.appendChild(removeButton);
+    row.appendChild(removeCell);
+
+    deckListElement?.appendChild(row);
+}
+
 const setupDeckDialog = (allData: {[key: string]: any}) => {
     const dialog = document.getElementById("deck-dialog") as HTMLDialogElement;
 
@@ -116,31 +139,14 @@ const setupDeckDialog = (allData: {[key: string]: any}) => {
     });
 
     // list of words
-    const deckListElement = document.getElementById('deck-list');
     if (!deckListElement) {
         console.error('Word list element not found');
         return;
     }
     const words = getWordsOfState(allData, CardState.InDeck);
 
-    for (const { word, count } of words) {
-        const row = document.createElement('tr');
-        
-        const wordCell = document.createElement('td');
-        wordCell.textContent = word;
-        row.appendChild(wordCell);
-
-        const removeCell = document.createElement('td');
-        const removeButton = document.createElement('button');
-        removeButton.textContent = '－';
-        removeButton.className = 'remove-button';
-        removeButton.onclick = async () => {
-            // todo
-        }
-        removeCell.appendChild(removeButton);
-        row.appendChild(removeCell);
-
-        deckListElement.appendChild(row);
+    for (const { word } of words) {
+        addWordToDeckDialog(word);
     }
 }
 
