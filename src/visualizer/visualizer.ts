@@ -1,3 +1,5 @@
+import { CardState } from "../common/enums";
+
 const setup = async () => {
     const wordListElement = document.getElementById('word-list');
     if (!wordListElement) {

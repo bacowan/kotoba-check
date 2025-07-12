@@ -1,5 +1,6 @@
 import { Readability } from "@mozilla/readability";
 import kuromoji from "kuromoji";
+import { CardState } from "../common/enums";
 
 const includedPartsOfSpeech = [
   "名詞",
@@ -28,18 +29,15 @@ const addWordsToDictionary = async (words: kuromoji.IpadicFeatures[]) => {
     .map(word => 'word_' + word.basic_form);
   const wordCounts = await chrome.storage.local.get(wordKeys);
   for (const key of wordKeys) {
-    const wordCount = wordCounts[key];
-    if (wordCount === undefined) {
+    console.log(wordCounts[key])
+    if (wordCounts[key] === undefined) {
       wordCounts[key] = {
         count: 1,
         state: CardState.Listed
       };
     }
     else {
-      wordCounts[key] = {
-        count: wordCount.count + 1,
-        state: wordCount.inDeck
-      }
+      wordCounts[key].count++;
     }
   }
   await chrome.storage.local.set(wordCounts);
@@ -61,7 +59,6 @@ const checkPage = async () => {
   // only parse the page if it hasn't been visited before
   const visitedKey = "visited_" + window.location.href;
   const wasVisited = await chrome.storage.local.get([visitedKey]);
-  console.log(wasVisited[visitedKey]);
 
   if (!wasVisited[visitedKey]) {
     await chrome.storage.local.set({ [visitedKey]: true });
