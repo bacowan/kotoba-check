@@ -87,10 +87,29 @@ const setWordState = async (word: string, count: number, state: CardState) => {
     );
 }
 
-setupList();
+const setupDeckDialog = () => {
+    const dialog = document.getElementById("deck-dialog") as HTMLDialogElement;
 
-const dialog = document.getElementById("deck-dialog") as HTMLDialogElement;
-const viewDeckButton = document.getElementById("view-deck-button");
-if (dialog !== null && viewDeckButton !== null) {
-    viewDeckButton.onclick = () => dialog.showModal();
+    // button to open dialog
+    const viewDeckButton = document.getElementById("view-deck-button");
+    if (dialog !== null && viewDeckButton !== null) {
+        viewDeckButton.onclick = () => dialog.showModal();
+    }
+
+    // close the dialog when clicking outside of it
+    dialog.addEventListener('click', (event) => {
+        const rect = dialog.getBoundingClientRect();
+        const isInDialog =
+            rect.top <= event.clientY &&
+            event.clientY <= rect.top + rect.height &&
+            rect.left <= event.clientX &&
+            event.clientX <= rect.left + rect.width;
+
+        if (!isInDialog) {
+            dialog.close();
+        }
+    });
 }
+
+setupList();
+setupDeckDialog();
