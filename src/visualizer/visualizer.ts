@@ -39,62 +39,52 @@ const setup = async () => {
         barCell.appendChild(barContainer);
         row.appendChild(barCell);
 
-        const removeRow = document.createElement('td');
+        const removeCell = document.createElement('td');
         const removeButton = document.createElement('button');
         removeButton.textContent = '－';
         removeButton.className = 'remove-button';
         removeButton.onclick = async () => {
-            await removeWordFromList(word, count);
-            removeWordFromUI(row);
+            await setWordState(word, count, CardState.Removed);
+            row.remove();
         }
-        removeRow.appendChild(removeButton);
-        row.appendChild(removeRow);
+        removeCell.appendChild(removeButton);
+        row.appendChild(removeCell);
 
-        const addRow = document.createElement('td');
+        const addCell = document.createElement('td');
         const addButton = document.createElement('button');
         addButton.textContent = '＋';
         addButton.className = 'add-button';
         addButton.onclick = async () => {
-            await addWordToDeck(word, count);
-            removeWordFromUI(row);
+            await setWordState(word, count, CardState.InDeck);
+            row.remove();
         }
-        addRow.appendChild(addButton);
-        row.appendChild(addRow);
+        addCell.appendChild(addButton);
+        row.appendChild(addCell);
 
         wordListElement.appendChild(row);
     }
 };
 
-// Add a word to the deck. This will update the local storage
-// to mark the word as in the deck, and it will appear in the deck
-// list. This will not remove it from the UI.
-const addWordToDeck = async (word: string, count: number) => {
-        const wordKey = `word_${word}`;
+// Set the state of a word card. This will update the local storage,
+// but will not remove it from the UI.
+const setWordState = async (word: string, count: number, state: CardState) => {
+    const wordKey = `word_${word}`;
     // reload the word to make sure it's up to date
     const freshWords = await chrome.storage.local.get([wordKey]);
     let freshWord = freshWords[wordKey];
     if (!freshWord) {
         freshWord = {
             count: count,
-            state: CardState.InDeck
+            state: state
         };
     }
     else {
-        freshWord.state = CardState.InDeck;
+        freshWord.state = state;
     }
 
     await chrome.storage.local.set(
         { [wordKey]: freshWord }
     );
-}
-
-// Remove a word from the word list. This will update local storage
-// to mark the word as removed. This function does not remove the word from the UI.
-const removeWordFromList = async (word: string, count: number) => {
-}
-
-// Remove a word from the UI.
-const removeWordFromUI = (row: HTMLTableRowElement) => {
 }
 
 setup();
