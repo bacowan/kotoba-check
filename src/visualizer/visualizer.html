@@ -11,41 +11,40 @@
     <h1>Kotoba Check</h1>
   </header>
 
-  <main>
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th class="word-header">Word</th>
-            <th class="frequency-header">Frequency</th>
-            <th class="add-header"></th>
-            <th class="remove-header"></th>
-          </tr>
-        </thead>
-        <tbody id="word-list">
-        </tbody>
-      </table>
-    </div>
+  <main class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th class="word-header">Word</th>
+          <th class="frequency-header">Frequency</th>
+          <th class="add-header"></th>
+          <th class="remove-header"></th>
+        </tr>
+      </thead>
+      <tbody id="word-list">
+      </tbody>
+    </table>
   </main>
 
   <dialog id="deck-dialog">
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th class="word-header">Word</th>
-            <th class="frequency-header">Frequency</th>
-            <th class="add-header"></th>
-            <th class="remove-header"></th>
-          </tr>
-        </thead>
-        <tbody class="word-list">
-        </tbody>
-      </table>
-    </div>
+    <div class="dialog-layout">
+      <h2>Deck</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="word-header">Word</th>
+              <th class="remove-header"></th>
+            </tr>
+          </thead>
+          <tbody id="deck-list">
+          </tbody>
+        </table>
+      </div>
 
-    <div class="button-row">
-      <button id="export-button" class="deck-button">Export...</button>
+      <div class="button-row">
+        <button id="export-button" class="deck-button">Export...</button>
+      </div>
     </div>
   </dialog>
 

@@ -1,23 +1,28 @@
 import { CardState } from "../common/enums";
 
-const setupList = async () => {
+const getWordsOfState = (allData: {[key: string]: any}, state: CardState): {
+        word: string;
+        count: any;
+    }[] => {
+    return Object.keys(allData)
+        // exclude url data
+        .filter(key => key.startsWith('word_'))
+        // only include words that are in the listed state
+        .filter(key => allData[key].state === state)
+        // remove the prefix and attach the value
+        .map(key => ({ word: key.slice(5), count: allData[key].count }))
+        // sort by count
+        .sort((a, b) => b.count - a.count);
+}
+
+const setupList = async (allData: {[key: string]: any}) => {
     const wordListElement = document.getElementById('word-list');
     if (!wordListElement) {
         console.error('Word list element not found');
         return;
     }
     
-    // retrieve all data that was stored by the content script
-    const allData = await chrome.storage.local.get(null);
-    const words = Object.keys(allData)
-        // exclude url data
-        .filter(key => key.startsWith('word_'))
-        // only include words that are in the listed state
-        .filter(key => allData[key].state === CardState.Listed)
-        // remove the prefix and attach the value
-        .map(key => ({ word: key.slice(5), count: allData[key].count }))
-        // sort by count
-        .sort((a, b) => b.count - a.count);
+    const words = getWordsOfState(allData, CardState.Listed);
     
     const maxCount = words.length > 0 ? words[0].count : 1;
 
@@ -87,7 +92,7 @@ const setWordState = async (word: string, count: number, state: CardState) => {
     );
 }
 
-const setupDeckDialog = () => {
+const setupDeckDialog = (allData: {[key: string]: any}) => {
     const dialog = document.getElementById("deck-dialog") as HTMLDialogElement;
 
     // button to open dialog
@@ -109,7 +114,38 @@ const setupDeckDialog = () => {
             dialog.close();
         }
     });
+
+    // list of words
+    const deckListElement = document.getElementById('deck-list');
+    if (!deckListElement) {
+        console.error('Word list element not found');
+        return;
+    }
+    const words = getWordsOfState(allData, CardState.InDeck);
+
+    for (const { word, count } of words) {
+        const row = document.createElement('tr');
+        
+        const wordCell = document.createElement('td');
+        wordCell.textContent = word;
+        row.appendChild(wordCell);
+
+        const removeCell = document.createElement('td');
+        const removeButton = document.createElement('button');
+        removeButton.textContent = '－';
+        removeButton.className = 'remove-button';
+        removeButton.onclick = async () => {
+            // todo
+        }
+        removeCell.appendChild(removeButton);
+        row.appendChild(removeCell);
+
+        deckListElement.appendChild(row);
+    }
 }
 
-setupList();
-setupDeckDialog();
+// retrieve all data that was stored by the content script
+chrome.storage.local.get(null).then((allData) => {
+    setupList(allData);
+    setupDeckDialog(allData);
+});
