@@ -14,7 +14,6 @@ header {
   padding: 12px;
   background-color: #f1f1f1;
   text-align: center;
-  border-bottom: 1px solid #ccc;
   flex-shrink: 0;
 }
 
@@ -42,11 +41,8 @@ main {
   flex-grow: 1;
   height: 100%;
   overflow: hidden;
-  margin: 12px;
+  margin: 0 12px;
   overflow-y: auto;
-}
-
-.table-container {
 }
 
 table {
@@ -144,6 +140,7 @@ thead th {
 }
 
 .tabs {
+  background-color: #f1f1f1;
   border-bottom: 2px solid #ccc;
   display: flex;
   gap: 1rem;
@@ -152,7 +149,7 @@ thead th {
 .tab-button {
   position: relative;
   appearance: none;
-  background: #ddd;
+  background: #a3ace2;
   border: none;
   font-size: 1rem;
   font-weight: bold;
@@ -165,8 +162,13 @@ thead th {
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
   margin-top: 2px;
+  color: white;
 }
 
 .tab-button:hover {
-  background: #eee;
+  background: #303f9f;
+}
+
+.tab.selected {
+  background: #3f51b5;
 }

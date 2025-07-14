@@ -11,25 +11,24 @@
     <h1>Kotoba Check</h1>
   </header>
 
+  <div class="tabs">
+    <button id="new-words-tab" class="tab tab-button selected">New Words</button>
+    <button id="deck-tab" class="tab tab-button">Deck</button>
+  </div>
+  
   <main>
-    <div class="tabs">
-      <button class="tab-button">New</button>
-      <button class="tab-button">Deck</button>
-    </div>
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th class="word-header">Word</th>
-            <th class="frequency-header">Frequency</th>
-            <th class="add-header"></th>
-            <th class="remove-header"></th>
-          </tr>
-        </thead>
-        <tbody id="word-list">
-        </tbody>
-      </table>
-    </div>
+    <table id="new-words-table">
+      <thead>
+        <tr>
+          <th class="word-header">Word</th>
+          <th class="frequency-header">Frequency</th>
+          <th class="add-header"></th>
+          <th class="remove-header"></th>
+        </tr>
+      </thead>
+      <tbody id="word-list">
+      </tbody>
+    </table>
   </main>
 
   <dialog id="deck-dialog">

@@ -150,8 +150,33 @@ const setupDeckDialog = (allData: {[key: string]: any}) => {
     }
 }
 
+const setupTabs = () => {
+    const newWordsTab = document.getElementById('new-words-tab');
+    const deckTab = document.getElementById('deck-tab');
+    const newWordsTable = document.getElementById('new-words-table');
+
+    if (newWordsTab && deckTab && newWordsTable) {
+        newWordsTab.onclick = () => {
+            newWordsTab.classList.add('selected');
+            deckTab.classList.remove('selected');
+            newWordsTable.style.display = 'table';
+            //wordListElement?.style.display = 'table';
+            //deckListElement?.style.display = 'none';
+        };
+
+        deckTab.onclick = () => {
+            deckTab.classList.add('selected');
+            newWordsTab?.classList.remove('selected');
+            newWordsTable.style.display = 'none';
+            //wordListElement?.style.display = 'none';
+            //deckListElement?.style.display = 'table';
+        };
+    }
+}
+
 // retrieve all data that was stored by the content script
 chrome.storage.local.get(null).then((allData) => {
+    setupTabs();
     setupList(allData);
     setupDeckDialog(allData);
 });
