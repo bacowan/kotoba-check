@@ -1,4 +1,5 @@
 import { CardState } from "../common/enums";
+import { hideSvg, plusSvg } from "./svg";
 
 const wordListElement = document.getElementById('word-list');
 const deckListElement = document.getElementById('deck-list');
@@ -59,7 +60,7 @@ const setupList = async (allData: {[key: string]: any}) => {
 
         const removeCell = document.createElement('td');
         const removeButton = document.createElement('button');
-        removeButton.textContent = '－';
+        removeButton.innerHTML = hideSvg;
         removeButton.className = 'remove-button';
         removeButton.onclick = async () => {
             await setWordState(word, count, CardState.Removed);
@@ -70,7 +71,7 @@ const setupList = async (allData: {[key: string]: any}) => {
 
         const addCell = document.createElement('td');
         const addButton = document.createElement('button');
-        addButton.textContent = '＋';
+        addButton.innerHTML = plusSvg;
         addButton.className = 'add-button';
         addButton.onclick = async () => {
             await setWordState(word, count, CardState.InDeck);

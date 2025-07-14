@@ -20,7 +20,7 @@ const __dirname = dirname(__filename);
             copy({
                 assets: [
                     {
-                        from: ['./src/**/*.{html,css,json,png}'],
+                        from: ['./src/**/*.{html,css,json,png,svg}'],
                         to: ['./'],
                     },
                     {
