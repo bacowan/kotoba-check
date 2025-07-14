@@ -3,6 +3,17 @@ import { CardState } from "../common/enums";
 const wordListElement = document.getElementById('word-list');
 const deckListElement = document.getElementById('deck-list');
 
+const getMaxCount = (allData: {[key: string]: any}): number => {
+    return Object.keys(allData)
+        // exclude url data
+        .filter(key => key.startsWith('word_'))
+        // remove the prefix and attach the value
+        .reduce((max, key) => {
+            const count = allData[key].count;
+            return Math.max(max, count);
+        }, 0);
+}
+
 const getWordsOfState = (allData: {[key: string]: any}, state: CardState): {
         word: string;
         count: any;
@@ -26,7 +37,7 @@ const setupList = async (allData: {[key: string]: any}) => {
     
     const words = getWordsOfState(allData, CardState.Listed);
     
-    const maxCount = words.length > 0 ? words[0].count : 1;
+    const maxCount = getMaxCount(allData);
 
     for (const { word, count } of words) {
         const row = document.createElement('tr');
@@ -63,7 +74,7 @@ const setupList = async (allData: {[key: string]: any}) => {
         addButton.className = 'add-button';
         addButton.onclick = async () => {
             await setWordState(word, count, CardState.InDeck);
-            addWordToDeckDialog(word);
+            addWordToDeckDialog(word, count, maxCount);
             row.remove();
         }
         addCell.appendChild(addButton);
@@ -95,12 +106,23 @@ const setWordState = async (word: string, count: number, state: CardState) => {
     );
 }
 
-const addWordToDeckDialog = (word: string) => {
+const addWordToDeckDialog = (word: string, count: number, maxCount: number) => {
     const row = document.createElement('tr');
     
     const wordCell = document.createElement('td');
     wordCell.textContent = word;
     row.appendChild(wordCell);
+    
+    const barCell = document.createElement('td');
+    const barContainer = document.createElement('div');
+    barContainer.className = 'bar-container';
+    barContainer.title = count.toString();
+    const barElement = document.createElement('div');
+    barElement.className = 'bar';
+    barElement.style.width = `${count / maxCount * 100}%`;
+    barContainer.appendChild(barElement);
+    barCell.appendChild(barContainer);
+    row.appendChild(barCell);
 
     const removeCell = document.createElement('td');
     const removeButton = document.createElement('button');
@@ -145,8 +167,9 @@ const setupDeckDialog = (allData: {[key: string]: any}) => {
     }
     const words = getWordsOfState(allData, CardState.InDeck);
 
-    for (const { word } of words) {
-        addWordToDeckDialog(word);
+    const maxCount = getMaxCount(allData);
+    for (const { word, count } of words) {
+        addWordToDeckDialog(word, count, maxCount);
     }
 }
 
@@ -154,22 +177,21 @@ const setupTabs = () => {
     const newWordsTab = document.getElementById('new-words-tab');
     const deckTab = document.getElementById('deck-tab');
     const newWordsTable = document.getElementById('new-words-table');
+    const deckTable = document.getElementById('deck-table');
 
-    if (newWordsTab && deckTab && newWordsTable) {
+    if (newWordsTab && deckTab && newWordsTable && deckTable) {
         newWordsTab.onclick = () => {
             newWordsTab.classList.add('selected');
             deckTab.classList.remove('selected');
-            newWordsTable.style.display = 'table';
-            //wordListElement?.style.display = 'table';
-            //deckListElement?.style.display = 'none';
+            newWordsTable.classList.remove('hidden');
+            deckTable.classList.add('hidden');
         };
 
         deckTab.onclick = () => {
             deckTab.classList.add('selected');
             newWordsTab?.classList.remove('selected');
-            newWordsTable.style.display = 'none';
-            //wordListElement?.style.display = 'none';
-            //deckListElement?.style.display = 'table';
+            newWordsTable.classList.add('hidden');
+            deckTable.classList.remove('hidden');
         };
     }
 }
