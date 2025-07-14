@@ -42,6 +42,25 @@
     </table>
   </main>
 
+  <dialog id="export-dialog">
+    <form method="dialog">
+      <h2>Export Deck</h2>
+      <p>Choose a format to export your deck:</p>
+      <div class="export-options">
+        <label>
+          <input type="radio" name="format" value="json" checked>
+          JSON
+        </label>
+        <label>
+          <input type="radio" name="format" value="csv">
+          CSV
+        </label>
+      </div>
+      <button type="submit">Export</button>
+      <button type="button" id="cancel-export-button">Cancel</button>
+    </form>
+  </dialog>
+
   <div class="button-row">
     <button id="export-deck-button" class="deck-button">Export Deck</button>
     <button id="options-button" class="deck-button">Options</button>

@@ -176,9 +176,34 @@ const setupTabs = () => {
     }
 }
 
+const setupExportDialog = () => {
+    const exportButton = document.getElementById('export-deck-button');
+    const dialog = document.getElementById('export-dialog') as HTMLDialogElement;
+    if (exportButton) {
+        exportButton.onclick = async () => {
+            dialog.showModal();
+        };
+    }
+    
+    // close the dialog when clicking outside of it
+    dialog.addEventListener('click', (event) => {
+        const rect = dialog.getBoundingClientRect();
+        const isInDialog =
+            rect.top <= event.clientY &&
+            event.clientY <= rect.top + rect.height &&
+            rect.left <= event.clientX &&
+            event.clientX <= rect.left + rect.width;
+
+        if (!isInDialog) {
+            dialog.close();
+        }
+    });
+}
+
 // retrieve all data that was stored by the content script
 chrome.storage.local.get(null).then((allData) => {
     setupTabs();
     setupList(allData);
     setupDeckList(allData);
+    setupExportDialog();
 });
