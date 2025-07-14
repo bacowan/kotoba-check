@@ -138,28 +138,7 @@ const addWordToDeckDialog = (word: string, count: number, maxCount: number) => {
     deckListElement?.appendChild(row);
 }
 
-const setupDeckDialog = (allData: {[key: string]: any}) => {
-    const dialog = document.getElementById("deck-dialog") as HTMLDialogElement;
-
-    // button to open dialog
-    const viewDeckButton = document.getElementById("view-deck-button");
-    if (dialog !== null && viewDeckButton !== null) {
-        viewDeckButton.onclick = () => dialog.showModal();
-    }
-
-    // close the dialog when clicking outside of it
-    dialog.addEventListener('click', (event) => {
-        const rect = dialog.getBoundingClientRect();
-        const isInDialog =
-            rect.top <= event.clientY &&
-            event.clientY <= rect.top + rect.height &&
-            rect.left <= event.clientX &&
-            event.clientX <= rect.left + rect.width;
-
-        if (!isInDialog) {
-            dialog.close();
-        }
-    });
+const setupDeckList = (allData: {[key: string]: any}) => {
 
     // list of words
     if (!deckListElement) {
@@ -201,5 +180,5 @@ const setupTabs = () => {
 chrome.storage.local.get(null).then((allData) => {
     setupTabs();
     setupList(allData);
-    setupDeckDialog(allData);
+    setupDeckList(allData);
 });
