@@ -26,11 +26,6 @@ dialog h2 {
   flex-direction: column;
 }
 
-dialog {
-  height: 80vh;
-  width: 80vw;
-}
-
 .dialog-layout {
   display: flex;
   flex-direction: column;
@@ -128,7 +123,7 @@ thead th {
   flex-shrink: 0;
 }
 
-.deck-button {
+.default-button {
   padding: 10px 20px;
   font-size: 14px;
   background-color: #3f51b5;
@@ -139,7 +134,7 @@ thead th {
   transition: background-color 0.2s ease;
 }
 
-.deck-button:hover {
+.default-button:hover {
   background-color: #303f9f;
 }
 
