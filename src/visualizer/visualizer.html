@@ -14,6 +14,7 @@
   <div class="tabs">
     <button id="new-words-tab" class="tab tab-button selected">New Words</button>
     <button id="deck-tab" class="tab tab-button">Deck</button>
+    <button id="hidden-tab" class="tab tab-button">Hidden</button>
   </div>
 
   <main>
@@ -42,10 +43,32 @@
     </table>
   </main>
 
-  <dialog id="export-dialog">
+  <dialog id="export-dialog" class="export-dialog">
     <h2>Export Deck</h2>
+    <p>Drag and drop to include or exclude columns and rearrange them:</p>
+    <div class="column-panels">
+      <div class="column-panel">
+        <div class="panel-title">Included Columns</div>
+        <ul class="column-list" id="included-columns">
+          <li class="column-item" draggable="true">Word</li>
+          <li class="column-item" draggable="true">Pronounciation</li>
+          <li class="column-item" draggable="true">Definition</li>
+        </ul>
+      </div>
 
-    <button class="default-button">Export</button>
+      <div class="column-panel">
+        <div class="panel-title">Excluded Columns</div>
+        <ul class="column-list" id="excluded-columns">
+          <li class="column-item" draggable="true">Frequency</li>
+          <li class="column-item" draggable="true">Index</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="dialog-footer">
+      <button class="default-button cancel-button" onclick="document.getElementById('export-dialog').close()">Cancel</button>
+      <button class="default-button">Export</button>
+    </div>
   </dialog>
 
   <div class="button-row">

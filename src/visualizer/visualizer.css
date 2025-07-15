@@ -175,3 +175,77 @@ thead th {
 .hidden {
   display: none;
 }
+.export-dialog {
+  padding: 1.5rem;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.export-dialog h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.column-panels {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.column-panel {
+  flex: 1 1 45%;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-title {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  white-space: nowrap;
+}
+
+.column-list {
+  flex: 1;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  min-height: 100px;
+  max-height: 50vh;
+  overflow-y: auto;
+  background: #f9f9f9;
+}
+
+.column-item {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #eee;
+  cursor: move;
+  background: #fff;
+}
+
+.column-item:last-child {
+  border-bottom: none;
+}
+
+.column-item.dragging {
+  opacity: 0.5;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.cancel-button {
+  background: #ddd;
+  color: #333;
+}
+
+.cancel-button:hover {
+  background: #bbb;
+}
