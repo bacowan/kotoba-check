@@ -1,24 +1,28 @@
 import { CardState } from "../common/enums";
+import { parseCsv } from "./csv";
+import { download } from "./download";
 import { hideSvg, plusSvg } from "./svg";
+
+interface WordInfo {
+    word: string;
+    count: number;
+    state: CardState;
+}
 
 const wordListElement = document.getElementById('word-list');
 const deckListElement = document.getElementById('deck-list');
 
-const getMaxCount = (allData: {[key: string]: any}): number => {
-    return Object.keys(allData)
-        // exclude url data
-        .filter(key => key.startsWith('word_'))
-        // remove the prefix and attach the value
-        .reduce((max, key) => {
-            const count = allData[key].count;
+const getMaxCount = (allWords: WordInfo[]): number => {
+    return allWords.reduce((max, word) => {
+            const count = word.count;
             return Math.max(max, count);
         }, 0);
 }
 
-const getWordsOfState = (allData: {[key: string]: any}, state: CardState): {
-        word: string;
-        count: any;
-    }[] => {
+const getWordsOfState = (allData: { [key: string]: any }, state: CardState): {
+    word: string;
+    count: any;
+}[] => {
     return Object.keys(allData)
         // exclude url data
         .filter(key => key.startsWith('word_'))
@@ -30,19 +34,19 @@ const getWordsOfState = (allData: {[key: string]: any}, state: CardState): {
         .sort((a, b) => b.count - a.count);
 }
 
-const setupList = async (allData: {[key: string]: any}) => {
+const setupList = async (allWords: WordInfo[]) => {
     if (!wordListElement) {
         console.error('Word list element not found');
         return;
     }
-    
-    const words = getWordsOfState(allData, CardState.Listed);
-    
-    const maxCount = getMaxCount(allData);
 
-    for (const { word, count } of words) {
+    const listedWords = allWords.filter(word => word.state === CardState.Listed);
+
+    const maxCount = getMaxCount(allWords);
+
+    for (const { word, count } of listedWords) {
         const row = document.createElement('tr');
-        
+
         const wordCell = document.createElement('td');
         wordCell.textContent = word;
         row.appendChild(wordCell);
@@ -50,7 +54,7 @@ const setupList = async (allData: {[key: string]: any}) => {
         const barCell = document.createElement('td');
         const barContainer = document.createElement('div');
         barContainer.className = 'bar-container';
-        barContainer.title = count;
+        barContainer.title = count.toString();
         const barElement = document.createElement('div');
         barElement.className = 'bar';
         barElement.style.width = `${count / maxCount * 100}%`;
@@ -109,11 +113,11 @@ const setWordState = async (word: string, count: number, state: CardState) => {
 
 const addWordToDeckDialog = (word: string, count: number, maxCount: number) => {
     const row = document.createElement('tr');
-    
+
     const wordCell = document.createElement('td');
     wordCell.textContent = word;
     row.appendChild(wordCell);
-    
+
     const barCell = document.createElement('td');
     const barContainer = document.createElement('div');
     barContainer.className = 'bar-container';
@@ -138,17 +142,17 @@ const addWordToDeckDialog = (word: string, count: number, maxCount: number) => {
     deckListElement?.appendChild(row);
 }
 
-const setupDeckList = (allData: {[key: string]: any}) => {
+const setupDeckList = (allWords: WordInfo[]) => {
 
     // list of words
     if (!deckListElement) {
         console.error('Word list element not found');
         return;
     }
-    const words = getWordsOfState(allData, CardState.InDeck);
+    const deckWords = allWords.filter(word => word.state === CardState.InDeck);
 
-    const maxCount = getMaxCount(allData);
-    for (const { word, count } of words) {
+    const maxCount = getMaxCount(allWords);
+    for (const { word, count } of deckWords) {
         addWordToDeckDialog(word, count, maxCount);
     }
 }
@@ -176,7 +180,7 @@ const setupTabs = () => {
     }
 }
 
-const setupExportDialog = () => {
+const setupExportDialog = (allWords: WordInfo[]) => {
     const exportButton = document.getElementById('export-deck-button');
     const dialog = document.getElementById('export-dialog') as HTMLDialogElement;
     if (exportButton) {
@@ -184,7 +188,7 @@ const setupExportDialog = () => {
             dialog.showModal();
         };
     }
-    
+
     // close the dialog when clicking outside of it
     dialog.addEventListener('click', (event) => {
         const rect = dialog.getBoundingClientRect();
@@ -198,6 +202,21 @@ const setupExportDialog = () => {
             dialog.close();
         }
     });
+
+    // Setup buttons
+    const cancelButton = document.getElementById('export-cancel-button');
+    if (cancelButton) {
+        cancelButton.onclick = () => {
+            dialog.close();
+        }
+    }
+    const finalizeButton = document.getElementById('export-finalize-button');
+    if (finalizeButton) {
+        finalizeButton.onclick = async () => {
+            exportDeck();
+            dialog.close();
+        }
+    }
 
     // Setup drag/drop
     const columnLists = Array.from(document.getElementsByClassName('column-list'));
@@ -239,20 +258,63 @@ function getDragAfterElement(container: Element, y: number): Element | null {
     const items = Array.from(container.querySelectorAll('.column-item:not(.dragging)'));
 
     return items.reduce((closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      if (offset < 0 && offset > closest.offset) {
-        return { offset, element: child };
-      } else {
-        return closest;
-      }
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset, element: child };
+        } else {
+            return closest;
+        }
     }, { offset: Number.NEGATIVE_INFINITY, element: null as Element | null }).element;
-  }
+}
+
+// Functions to get csv cells for words, keyed on the id of the column element in the export dialog
+const columnExporters = new Map<string, (word: string) => string>([
+    ["word-export-column", (word) => word],
+]);
+
+function exportDeck() {
+    const includedColumns = document.getElementById("included-columns");
+    const deckTable = document.getElementById("deck-list");
+    if (includedColumns && deckTable) {
+
+        const deckWords = Array.from(deckTable.getElementsByTagName("tr"))
+            .map(row => row.firstChild?.textContent)
+            .filter(word => word !== undefined) as string[];
+
+        const exporters = Array.from(includedColumns.getElementsByTagName("li"))
+            .map(col => columnExporters.get(col.id));
+
+        const exportData: string[][] = [];
+        
+        for (const word of deckWords) {
+            const newRow: string[] = [];
+            for (const exporter of exporters) {
+                if (exporter) {
+                    newRow.push(exporter(word));
+                }
+            }
+            exportData.push(newRow);
+        }
+
+        const csv = parseCsv(exportData);
+        download("deck.csv", csv);
+    }
+}
 
 // retrieve all data that was stored by the content script
 chrome.storage.local.get(null).then((allData) => {
+    const words: WordInfo[] = Object.keys(allData)
+        // exclude url data
+        .filter(key => key.startsWith('word_'))
+        // remove the prefix and attach the value
+        .map(key => ({ word: key.slice(5), count: allData[key].count, state: allData[key].state }))
+        // sort by count
+        .sort((a, b) => b.count - a.count);
+
+
     setupTabs();
-    setupList(allData);
-    setupDeckList(allData);
-    setupExportDialog();
+    setupList(words);
+    setupDeckList(words);
+    setupExportDialog(words);
 });
