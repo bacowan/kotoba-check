@@ -198,7 +198,56 @@ const setupExportDialog = () => {
             dialog.close();
         }
     });
+
+    // Setup drag/drop
+    const columnLists = Array.from(document.getElementsByClassName('column-list'));
+    let draggedItem: HTMLElement | null = null;
+    for (const columnList of columnLists) {
+        columnList.addEventListener('dragstart', (event) => {
+            if (event.target instanceof HTMLElement && event.target.classList.contains('column-item')) {
+                draggedItem = event.target;
+            }
+        });
+
+        columnList.addEventListener('dragend', (event) => {
+            if (event.target instanceof HTMLElement && event.target.classList.contains('column-item')) {
+                draggedItem = null;
+            }
+        });
+
+        columnList.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            if (draggedItem && event instanceof DragEvent) {
+                const afterElement = getDragAfterElement(columnList, event.clientY);
+                if (afterElement == null) {
+                    columnList.appendChild(draggedItem);
+                } else {
+                    columnList.insertBefore(draggedItem, afterElement);
+                }
+            }
+        });
+
+        columnList.addEventListener('drop', (event) => {
+            // drop is handled by dragover + insert logic above
+            event.preventDefault();
+        });
+    }
 }
+
+// Get the element in the container that is is expected to appear before the given screen Y coordinate
+function getDragAfterElement(container: Element, y: number): Element | null {
+    const items = Array.from(container.querySelectorAll('.column-item:not(.dragging)'));
+
+    return items.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset, element: child };
+      } else {
+        return closest;
+      }
+    }, { offset: Number.NEGATIVE_INFINITY, element: null as Element | null }).element;
+  }
 
 // retrieve all data that was stored by the content script
 chrome.storage.local.get(null).then((allData) => {
