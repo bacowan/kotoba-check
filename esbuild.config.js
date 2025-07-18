@@ -26,7 +26,11 @@ const __dirname = dirname(__filename);
                     {
                         from: ['./kuromoji/dict/*'],
                         to: ['./dict'],
-                    }
+                    },
+                    {
+                        from: ['./jmdict/jmdict.json'],
+                        to: ['./jmdict'],
+                    },
                 ],
             }),
         ]

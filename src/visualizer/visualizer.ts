@@ -2,6 +2,9 @@ import { CardState } from "../common/enums";
 import { parseCsv } from "./csv";
 import { download } from "./download";
 import { hideSvg, plusSvg } from "./svg";
+import * as jmdict from "../../jmdict/jmdict.json";
+
+const jmdictJson = jmdict as { [key: string]: string[] | undefined };
 
 interface WordInfo {
     word: string;
@@ -50,6 +53,12 @@ const setupList = async (allWords: WordInfo[]) => {
         const wordCell = document.createElement('td');
         wordCell.textContent = word;
         row.appendChild(wordCell);
+        
+        const definitions = jmdictJson[word];
+
+        const definitionCell = document.createElement('td');
+        definitionCell.textContent = definitions && definitions.length > 0 ? definitions[0] : "";
+        row.appendChild(definitionCell);
 
         const barCell = document.createElement('td');
         const barContainer = document.createElement('div');
@@ -117,6 +126,12 @@ const addWordToDeckDialog = (word: string, count: number, maxCount: number) => {
     const wordCell = document.createElement('td');
     wordCell.textContent = word;
     row.appendChild(wordCell);
+
+    const definitions = jmdictJson[word];
+
+    const definitionCell = document.createElement('td');
+    definitionCell.textContent = definitions && definitions.length > 0 ? definitions[0] : "";
+    row.appendChild(definitionCell);
 
     const barCell = document.createElement('td');
     const barContainer = document.createElement('div');

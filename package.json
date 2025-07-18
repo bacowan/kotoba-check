@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "node esbuild.config.js"
+    "build": "node esbuild.config.js",
+    "generate-jmdict": "node ./jmdict/parse.js"
   },
   "keywords": [],
   "author": "",

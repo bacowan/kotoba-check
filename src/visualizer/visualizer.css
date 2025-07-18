@@ -66,6 +66,10 @@ thead th {
   width: 100px;
 }
 
+.definition-header {
+  width: 250px;
+}
+
 .remove-header, .add-header {
   width: 50px;
 }
