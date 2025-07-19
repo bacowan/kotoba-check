@@ -3,11 +3,9 @@ import { parseCsv } from "./csv";
 import { download } from "./download";
 import { hideSvg, plusSvg } from "./svg";
 import * as jmdict from "../../jmdict/jmdict.json";
+import { ColumnExporter, JmdictEntry } from "./types";
+import { WordColumnExporter } from "./columnExporters";
 
-interface JmdictEntry {
-    definitions: string[];
-    readings: string[];
-};
 const jmdictJson = jmdict as { [key: string]: JmdictEntry | undefined };
 
 interface WordInfo {
@@ -221,6 +219,8 @@ const setupExportDialog = (allWords: WordInfo[]) => {
         };
     }
 
+    // setup column options
+
     // close the dialog when clicking outside of it
     dialog.addEventListener('click', (event) => {
         const rect = dialog.getBoundingClientRect();
@@ -301,8 +301,8 @@ function getDragAfterElement(container: Element, y: number): Element | null {
 }
 
 // Functions to get csv cells for words, keyed on the id of the column element in the export dialog
-const columnExporters = new Map<string, (word: string) => string>([
-    ["word-export-column", (word) => word],
+const columnExporters = new Map<string, ColumnExporter>([
+    ["word-export-column", WordColumnExporter],
 ]);
 
 function exportDeck() {
@@ -323,7 +323,7 @@ function exportDeck() {
             const newRow: string[] = [];
             for (const exporter of exporters) {
                 if (exporter) {
-                    newRow.push(exporter(word));
+                    newRow.push(exporter.export(word));
                 }
             }
             exportData.push(newRow);
