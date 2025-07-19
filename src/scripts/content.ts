@@ -19,7 +19,7 @@ const excludedPosDetail = [
 ]
 
 const addWordsToDictionary = async (words: kuromoji.IpadicFeatures[]) => {
-  const wordKeys = words
+  const knownWords = words
     .filter(word =>
       word.word_type === "KNOWN" &&
       includedPartsOfSpeech.includes(word.pos) &&
@@ -28,20 +28,24 @@ const addWordsToDictionary = async (words: kuromoji.IpadicFeatures[]) => {
       !excludedPosDetail.includes(word.pos_detail_3))
     .map(word => ({
       word: 'word_' + word.basic_form,
+      reading: word.reading,
       pronounciation: word.pronunciation,
-      reading: word.reading
+      other: word
     }));
-  const wordCounts = await chrome.storage.local.get(wordKeys);
-  for (const key of wordKeys) {
-    if (wordCounts[key.word] === undefined) {
-      wordCounts[key.word] = {
+  const wordCounts = await chrome.storage.local.get(knownWords.map(w => w.word));
+  for (const word of knownWords) {
+    if (word.word === "word_する") {
+      console.log(word)
+    }
+    if (wordCounts[word.word] === undefined) {
+      wordCounts[word.word] = {
         count: 1,
         state: CardState.Listed,
-        reading: key.reading
+        reading: word.reading
       };
     }
     else {
-      wordCounts[key.word].count++;
+      wordCounts[word.word].count++;
     }
   }
   await chrome.storage.local.set(wordCounts);
@@ -55,6 +59,7 @@ const parse = async () => {
     kuromoji.builder({ dicPath: chrome.runtime.getURL('dict') }).build(function (err, tokenizer) {
       const tokenizedTitle = tokenizer.tokenize(title);
       const tokenizedContent = tokenizer.tokenize(textContent);
+      console.log(tokenizedContent);
       addWordsToDictionary(tokenizedTitle);
       addWordsToDictionary(tokenizedContent);
     });

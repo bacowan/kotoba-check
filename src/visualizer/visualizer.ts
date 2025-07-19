@@ -4,12 +4,17 @@ import { download } from "./download";
 import { hideSvg, plusSvg } from "./svg";
 import * as jmdict from "../../jmdict/jmdict.json";
 
-const jmdictJson = jmdict as { [key: string]: string[] | undefined };
+interface JmdictEntry {
+    definitions: string[];
+    readings: string[];
+};
+const jmdictJson = jmdict as { [key: string]: JmdictEntry | undefined };
 
 interface WordInfo {
     word: string;
     count: number;
     state: CardState;
+    reading: string;
 }
 
 const wordListElement = document.getElementById('word-list');
@@ -37,7 +42,7 @@ const getWordsOfState = (allData: { [key: string]: any }, state: CardState): {
         .sort((a, b) => b.count - a.count);
 }
 
-const setupList = async (allWords: WordInfo[]) => {
+const setupListedTab = async (allWords: WordInfo[]) => {
     if (!wordListElement) {
         console.error('Word list element not found');
         return;
@@ -48,16 +53,22 @@ const setupList = async (allWords: WordInfo[]) => {
     const maxCount = getMaxCount(allWords);
 
     for (const { word, count } of listedWords) {
+        const dictEntry = jmdictJson[word];
+        const reading = dictEntry && dictEntry.readings.length > 0 ? dictEntry.readings[0] : "";
+        const definition = dictEntry && dictEntry.definitions.length > 0 ? dictEntry.definitions[0] : "";
+
         const row = document.createElement('tr');
 
         const wordCell = document.createElement('td');
         wordCell.textContent = word;
         row.appendChild(wordCell);
-        
-        const definitions = jmdictJson[word];
+
+        const readingCell = document.createElement('td');
+        readingCell.textContent = reading;
+        row.appendChild(readingCell);
 
         const definitionCell = document.createElement('td');
-        definitionCell.textContent = definitions && definitions.length > 0 ? definitions[0] : "";
+        definitionCell.textContent = definition;
         row.appendChild(definitionCell);
 
         const barCell = document.createElement('td');
@@ -121,16 +132,22 @@ const setWordState = async (word: string, count: number, state: CardState) => {
 }
 
 const addWordToDeckDialog = (word: string, count: number, maxCount: number) => {
+    const dictEntry = jmdictJson[word];
+    const reading = dictEntry && dictEntry.readings.length > 0 ? dictEntry.readings[0] : "";
+    const definition = dictEntry && dictEntry.definitions.length > 0 ? dictEntry.definitions[0] : "";
+
     const row = document.createElement('tr');
 
     const wordCell = document.createElement('td');
     wordCell.textContent = word;
     row.appendChild(wordCell);
 
-    const definitions = jmdictJson[word];
+    const readingCell = document.createElement('td');
+    readingCell.textContent = reading;
+    row.appendChild(readingCell);
 
     const definitionCell = document.createElement('td');
-    definitionCell.textContent = definitions && definitions.length > 0 ? definitions[0] : "";
+    definitionCell.textContent = definition;
     row.appendChild(definitionCell);
 
     const barCell = document.createElement('td');
@@ -157,7 +174,7 @@ const addWordToDeckDialog = (word: string, count: number, maxCount: number) => {
     deckListElement?.appendChild(row);
 }
 
-const setupDeckList = (allWords: WordInfo[]) => {
+const setupDeckTab = (allWords: WordInfo[]) => {
 
     // list of words
     if (!deckListElement) {
@@ -323,13 +340,17 @@ chrome.storage.local.get(null).then((allData) => {
         // exclude url data
         .filter(key => key.startsWith('word_'))
         // remove the prefix and attach the value
-        .map(key => ({ word: key.slice(5), count: allData[key].count, state: allData[key].state }))
+        .map(key => ({
+            word: key.slice(5),
+            count: allData[key].count,
+            state: allData[key].state,
+            reading: allData[key].reading }))
         // sort by count
         .sort((a, b) => b.count - a.count);
 
 
     setupTabs();
-    setupList(words);
-    setupDeckList(words);
+    setupListedTab(words);
+    setupDeckTab(words);
     setupExportDialog(words);
 });

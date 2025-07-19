@@ -1,3 +1,4 @@
+// Parser for files from https://github.com/scriptin/jmdict-simplified?tab=readme-ov-file
 
 import { promises as fs } from "fs";
 import { join, dirname } from 'path';
@@ -20,15 +21,21 @@ const parse = async () => {
                 kanji: kanji.text,
                 definitions: word.sense.flatMap(sense =>
                     sense.gloss.filter(gloss => gloss.lang === "eng").map(gloss => gloss.text)
-                )
+                ),
+                readings: word.kana.map(kana => kana.text)
             }
         });
     })
     .reduce((acc, curr) => {
         if (!acc[curr.kanji]) {
-            acc[curr.kanji] = [];
+            acc[curr.kanji] = {
+                definitions: [],
+                readings: []
+            };
         }
-        acc[curr.kanji].push(...curr.definitions);
+        // TODO: take into account multiple definitions and readings
+        acc[curr.kanji].definitions.push(...curr.definitions);
+        acc[curr.kanji].readings.push(...curr.readings);
         return acc;
     }, {});
 

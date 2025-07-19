@@ -62,7 +62,7 @@ thead th {
   text-align: left;
 }
 
-.word-header {
+.word-header, .reading-header {
   width: 100px;
 }
 
