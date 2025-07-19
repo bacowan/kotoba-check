@@ -253,3 +253,7 @@ thead th {
 .cancel-button:hover {
   background: #bbb;
 }
+
+label {
+  vertical-align: middle;
+}
