@@ -57,6 +57,7 @@ const setupListedTabWords = async (allWords: WordInfo[]) => {
 
     const listedWords = allWords.filter(word => word.state === CardState.Listed);
 
+    // initialize this part of the word cache
     wordCache.setNewWords(listedWords.reduce((acc, word) => {
         acc[word.word] = word;
         return acc;
@@ -64,6 +65,7 @@ const setupListedTabWords = async (allWords: WordInfo[]) => {
 
     const maxCount = getMaxCount(allWords);
 
+    // add the words to the UI
     for (const { word, count } of listedWords) {
         const dictEntry = jmdictJson[word];
         const reading = dictEntry && dictEntry.readings.length > 0 ? dictEntry.readings[0] : "";
@@ -114,6 +116,7 @@ const setupListedTabWords = async (allWords: WordInfo[]) => {
     }
 };
 
+// Add a singluar word to the deck UI (not the cache though)
 const addWordToDeck = (word: string, count: number, maxCount: number) => {
     const dictEntry = jmdictJson[word];
     const reading = dictEntry && dictEntry.readings.length > 0 ? dictEntry.readings[0] : "";
@@ -158,25 +161,27 @@ const addWordToDeck = (word: string, count: number, maxCount: number) => {
 }
 
 const setupDeckTabWords = (allWords: WordInfo[]) => {
-
-    // list of words
     if (!deckListElement) {
         console.error('Word list element not found');
         return;
     }
     const deckWords = allWords.filter(word => word.state === CardState.InDeck);
 
+    // Initialize this part of the cache
     wordCache.setDeckWords(deckWords.reduce((acc, word) => {
         acc[word.word] = word;
         return acc;
     }, {} as { [key: string]: WordInfo }));
 
     const maxCount = getMaxCount(allWords);
+
+    // Add the words to the UI
     for (const { word, count } of deckWords) {
         addWordToDeck(word, count, maxCount);
     }
 }
 
+// setup the click handlers for the tab headers
 const setupTabs = () => {
     const newWordsTab = document.getElementById('new-words-tab');
     const deckTab = document.getElementById('deck-tab');
