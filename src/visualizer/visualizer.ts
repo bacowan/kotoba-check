@@ -1,24 +1,54 @@
 import { CardState } from "../common/enums";
-import { parseCsv } from "./csv";
-import { download } from "./download";
 import { hideSvg, plusSvg } from "./svg";
 import * as jmdict from "../../jmdict/jmdict.json";
 import { ColumnExporter, JmdictEntry, WordInfo } from "./types";
 import { WordColumnExporter } from "./columnExporters";
 import { wordCache } from "./wordCache";
+import { getDragAfterElement, getMaxCount } from "./utils";
+import { exportDeck } from "./export";
 
 const jmdictJson = jmdict as { [key: string]: JmdictEntry | undefined };
-
 const wordListElement = document.getElementById('word-list');
 const deckListElement = document.getElementById('deck-list');
+const columnsToExport = [WordColumnExporter] as ColumnExporter[];
 
-const getMaxCount = (allWords: WordInfo[]): number => {
-    return allWords.reduce((max, word) => {
-        const count = word.count;
-        return Math.max(max, count);
-    }, 0);
+// Button click handlers
+const listedWordRemoveButtonOnClickHandler = async (word: string, count: number, row: HTMLElement) => {
+    await setWordState(word, count, CardState.Removed);
+    row.remove();
+    wordCache.moveWord(word, 'new', 'excluded');
 }
 
+const listedWordAddButtonOnClickHandler = async (word: string, count: number, maxCount: number, row: HTMLElement) => {
+    await setWordState(word, count, CardState.InDeck);
+    addWordToDeck(word, count, maxCount);
+    row.remove();
+    wordCache.moveWord(word, 'new', 'deck');
+}
+
+// Set the state of a word card. This will update the local storage,
+// but will not remove it from the UI.
+const setWordState = async (word: string, count: number, state: CardState) => {
+    const wordKey = `word_${word}`;
+    // reload the word to make sure it's up to date
+    const freshWords = await chrome.storage.local.get([wordKey]);
+    let freshWord = freshWords[wordKey];
+    if (!freshWord) {
+        freshWord = {
+            count: count,
+            state: state
+        };
+    }
+    else {
+        freshWord.state = state;
+    }
+
+    await chrome.storage.local.set(
+        { [wordKey]: freshWord }
+    );
+}
+
+// Setup functions
 const setupListedTabWords = async (allWords: WordInfo[]) => {
     if (!wordListElement) {
         console.error('Word list element not found');
@@ -68,11 +98,7 @@ const setupListedTabWords = async (allWords: WordInfo[]) => {
         const removeButton = document.createElement('button');
         removeButton.innerHTML = hideSvg;
         removeButton.className = 'remove-button';
-        removeButton.onclick = async () => {
-            await setWordState(word, count, CardState.Removed);
-            row.remove();
-            wordCache.moveWord(word, 'new', 'excluded');
-        }
+        removeButton.onclick = async () => await listedWordRemoveButtonOnClickHandler(word, count, row);
         removeCell.appendChild(removeButton);
         row.appendChild(removeCell);
 
@@ -80,40 +106,13 @@ const setupListedTabWords = async (allWords: WordInfo[]) => {
         const addButton = document.createElement('button');
         addButton.innerHTML = plusSvg;
         addButton.className = 'add-button';
-        addButton.onclick = async () => {
-            await setWordState(word, count, CardState.InDeck);
-            addWordToDeck(word, count, maxCount);
-            row.remove();
-            wordCache.moveWord(word, 'new', 'deck');
-        }
+        addButton.onclick = async () => await listedWordAddButtonOnClickHandler(word, count, maxCount, row);
         addCell.appendChild(addButton);
         row.appendChild(addCell);
 
         wordListElement.appendChild(row);
     }
 };
-
-// Set the state of a word card. This will update the local storage,
-// but will not remove it from the UI.
-const setWordState = async (word: string, count: number, state: CardState) => {
-    const wordKey = `word_${word}`;
-    // reload the word to make sure it's up to date
-    const freshWords = await chrome.storage.local.get([wordKey]);
-    let freshWord = freshWords[wordKey];
-    if (!freshWord) {
-        freshWord = {
-            count: count,
-            state: state
-        };
-    }
-    else {
-        freshWord.state = state;
-    }
-
-    await chrome.storage.local.set(
-        { [wordKey]: freshWord }
-    );
-}
 
 const addWordToDeck = (word: string, count: number, maxCount: number) => {
     const dictEntry = jmdictJson[word];
@@ -236,7 +235,7 @@ const setupExportDialog = (allWords: WordInfo[]) => {
     const finalizeButton = document.getElementById('export-finalize-button');
     if (finalizeButton) {
         finalizeButton.onclick = async () => {
-            exportDeck();
+            exportDeck(columnsToExport, Object.values(wordCache.deckWords));
             dialog.close();
         }
     }
@@ -273,55 +272,6 @@ const setupExportDialog = (allWords: WordInfo[]) => {
             // drop is handled by dragover + insert logic above
             event.preventDefault();
         });
-    }
-}
-
-// Get the element in the container that is is expected to appear before the given screen Y coordinate
-function getDragAfterElement(container: Element, y: number): Element | null {
-    const items = Array.from(container.querySelectorAll('.column-item:not(.dragging)'));
-
-    return items.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) {
-            return { offset, element: child };
-        } else {
-            return closest;
-        }
-    }, { offset: Number.NEGATIVE_INFINITY, element: null as Element | null }).element;
-}
-
-// Functions to get csv cells for words, keyed on the id of the column element in the export dialog
-const columnExporters = new Map<string, ColumnExporter>([
-    ["word-export-column", WordColumnExporter],
-]);
-
-function exportDeck() {
-    const includedColumns = document.getElementById("included-columns");
-    const deckTable = document.getElementById("deck-list");
-    if (includedColumns && deckTable) {
-
-        const deckWords = Array.from(deckTable.getElementsByTagName("tr"))
-            .map(row => row.firstChild?.textContent)
-            .filter(word => word !== undefined) as string[];
-
-        const exporters = Array.from(includedColumns.getElementsByTagName("li"))
-            .map(col => columnExporters.get(col.id));
-
-        const exportData: string[][] = [];
-        
-        for (const word of deckWords) {
-            const newRow: string[] = [];
-            for (const exporter of exporters) {
-                if (exporter) {
-                    newRow.push(exporter.export(word));
-                }
-            }
-            exportData.push(newRow);
-        }
-
-        const csv = parseCsv(exportData);
-        download("deck.csv", csv);
     }
 }
 

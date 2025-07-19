@@ -1,7 +1,8 @@
-import { ColumnExporter } from "./types";
+import { ColumnExporter, WordInfo } from "./types";
 
 export const WordColumnExporter: ColumnExporter = {
+    localStorageKey: "word",
     includeByDefault: true,
     header: "Word",
-    export: (word: string) => word
+    export: (word: WordInfo) => word.word
 }

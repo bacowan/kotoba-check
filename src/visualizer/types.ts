@@ -6,9 +6,10 @@ export interface JmdictEntry {
 };
 
 export interface ColumnExporter {
+    localStorageKey: string,
     includeByDefault: boolean;
     header: string;
-    export: (word: string) => string;
+    export: (word: WordInfo) => string;
 }
 
 export interface WordInfo {
