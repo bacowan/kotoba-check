@@ -27,10 +27,7 @@ const addWordsToDictionary = async (words: kuromoji.IpadicFeatures[]) => {
       !excludedPosDetail.includes(word.pos_detail_2) &&
       !excludedPosDetail.includes(word.pos_detail_3))
     .map(word => ({
-      word: 'word_' + word.basic_form,
-      reading: word.reading,
-      pronounciation: word.pronunciation,
-      other: word
+      word: 'word_' + word.basic_form
     }));
   const wordCounts = await chrome.storage.local.get(knownWords.map(w => w.word));
   for (const word of knownWords) {
@@ -40,8 +37,7 @@ const addWordsToDictionary = async (words: kuromoji.IpadicFeatures[]) => {
     if (wordCounts[word.word] === undefined) {
       wordCounts[word.word] = {
         count: 1,
-        state: CardState.Listed,
-        reading: word.reading
+        state: CardState.Listed
       };
     }
     else {
