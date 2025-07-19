@@ -3,50 +3,34 @@ import { parseCsv } from "./csv";
 import { download } from "./download";
 import { hideSvg, plusSvg } from "./svg";
 import * as jmdict from "../../jmdict/jmdict.json";
-import { ColumnExporter, JmdictEntry } from "./types";
+import { ColumnExporter, JmdictEntry, WordInfo } from "./types";
 import { WordColumnExporter } from "./columnExporters";
+import { wordCache } from "./wordCache";
 
 const jmdictJson = jmdict as { [key: string]: JmdictEntry | undefined };
-
-interface WordInfo {
-    word: string;
-    count: number;
-    state: CardState;
-    reading: string;
-}
 
 const wordListElement = document.getElementById('word-list');
 const deckListElement = document.getElementById('deck-list');
 
 const getMaxCount = (allWords: WordInfo[]): number => {
     return allWords.reduce((max, word) => {
-            const count = word.count;
-            return Math.max(max, count);
-        }, 0);
+        const count = word.count;
+        return Math.max(max, count);
+    }, 0);
 }
 
-const getWordsOfState = (allData: { [key: string]: any }, state: CardState): {
-    word: string;
-    count: any;
-}[] => {
-    return Object.keys(allData)
-        // exclude url data
-        .filter(key => key.startsWith('word_'))
-        // only include words that are in the listed state
-        .filter(key => allData[key].state === state)
-        // remove the prefix and attach the value
-        .map(key => ({ word: key.slice(5), count: allData[key].count }))
-        // sort by count
-        .sort((a, b) => b.count - a.count);
-}
-
-const setupListedTab = async (allWords: WordInfo[]) => {
+const setupListedTabWords = async (allWords: WordInfo[]) => {
     if (!wordListElement) {
         console.error('Word list element not found');
         return;
     }
 
     const listedWords = allWords.filter(word => word.state === CardState.Listed);
+
+    wordCache.setNewWords(listedWords.reduce((acc, word) => {
+        acc[word.word] = word;
+        return acc;
+    }, {} as { [key: string]: WordInfo }));
 
     const maxCount = getMaxCount(allWords);
 
@@ -87,6 +71,7 @@ const setupListedTab = async (allWords: WordInfo[]) => {
         removeButton.onclick = async () => {
             await setWordState(word, count, CardState.Removed);
             row.remove();
+            wordCache.moveWord(word, 'new', 'excluded');
         }
         removeCell.appendChild(removeButton);
         row.appendChild(removeCell);
@@ -97,8 +82,9 @@ const setupListedTab = async (allWords: WordInfo[]) => {
         addButton.className = 'add-button';
         addButton.onclick = async () => {
             await setWordState(word, count, CardState.InDeck);
-            addWordToDeckDialog(word, count, maxCount);
+            addWordToDeck(word, count, maxCount);
             row.remove();
+            wordCache.moveWord(word, 'new', 'deck');
         }
         addCell.appendChild(addButton);
         row.appendChild(addCell);
@@ -129,7 +115,7 @@ const setWordState = async (word: string, count: number, state: CardState) => {
     );
 }
 
-const addWordToDeckDialog = (word: string, count: number, maxCount: number) => {
+const addWordToDeck = (word: string, count: number, maxCount: number) => {
     const dictEntry = jmdictJson[word];
     const reading = dictEntry && dictEntry.readings.length > 0 ? dictEntry.readings[0] : "";
     const definition = dictEntry && dictEntry.definitions.length > 0 ? dictEntry.definitions[0] : "";
@@ -172,7 +158,7 @@ const addWordToDeckDialog = (word: string, count: number, maxCount: number) => {
     deckListElement?.appendChild(row);
 }
 
-const setupDeckTab = (allWords: WordInfo[]) => {
+const setupDeckTabWords = (allWords: WordInfo[]) => {
 
     // list of words
     if (!deckListElement) {
@@ -181,9 +167,14 @@ const setupDeckTab = (allWords: WordInfo[]) => {
     }
     const deckWords = allWords.filter(word => word.state === CardState.InDeck);
 
+    wordCache.setDeckWords(deckWords.reduce((acc, word) => {
+        acc[word.word] = word;
+        return acc;
+    }, {} as { [key: string]: WordInfo }));
+
     const maxCount = getMaxCount(allWords);
     for (const { word, count } of deckWords) {
-        addWordToDeckDialog(word, count, maxCount);
+        addWordToDeck(word, count, maxCount);
     }
 }
 
@@ -350,7 +341,7 @@ chrome.storage.local.get(null).then((allData) => {
 
 
     setupTabs();
-    setupListedTab(words);
-    setupDeckTab(words);
+    setupListedTabWords(words);
+    setupDeckTabWords(words);
     setupExportDialog(words);
 });
