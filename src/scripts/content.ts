@@ -26,17 +26,22 @@ const addWordsToDictionary = async (words: kuromoji.IpadicFeatures[]) => {
       !excludedPosDetail.includes(word.pos_detail_1) &&
       !excludedPosDetail.includes(word.pos_detail_2) &&
       !excludedPosDetail.includes(word.pos_detail_3))
-    .map(word => 'word_' + word.basic_form);
+    .map(word => ({
+      word: 'word_' + word.basic_form,
+      pronounciation: word.pronunciation,
+      reading: word.reading
+    }));
   const wordCounts = await chrome.storage.local.get(wordKeys);
   for (const key of wordKeys) {
-    if (wordCounts[key] === undefined) {
-      wordCounts[key] = {
+    if (wordCounts[key.word] === undefined) {
+      wordCounts[key.word] = {
         count: 1,
-        state: CardState.Listed
+        state: CardState.Listed,
+        reading: key.reading
       };
     }
     else {
-      wordCounts[key].count++;
+      wordCounts[key.word].count++;
     }
   }
   await chrome.storage.local.set(wordCounts);
@@ -44,12 +49,14 @@ const addWordsToDictionary = async (words: kuromoji.IpadicFeatures[]) => {
 
 const parse = async () => {
   const article = new Readability(document.cloneNode(true) as Document).parse();
-  if (article) {
+  if (article && article.title && article.textContent) {
+    const title = article.title;
+    const textContent = article.textContent;
     kuromoji.builder({ dicPath: chrome.runtime.getURL('dict') }).build(function (err, tokenizer) {
-      const title = tokenizer.tokenize(article.title);
-      const content = tokenizer.tokenize(article.textContent);
-      addWordsToDictionary(title);
-      addWordsToDictionary(content);
+      const tokenizedTitle = tokenizer.tokenize(title);
+      const tokenizedContent = tokenizer.tokenize(textContent);
+      addWordsToDictionary(tokenizedTitle);
+      addWordsToDictionary(tokenizedContent);
     });
   }
 }
