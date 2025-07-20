@@ -18,3 +18,8 @@ export interface WordInfo {
     state: CardState;
     reading: string;
 }
+
+export interface ExportSettings {
+    includedExporters: string[],
+    shouldIncludeHeaders: boolean
+}

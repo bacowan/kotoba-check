@@ -6,3 +6,5 @@ export const WordColumnExporter: ColumnExporter = {
     header: "Word",
     export: (word: WordInfo) => word.word
 }
+
+export const AllColumnExporters = [WordColumnExporter];

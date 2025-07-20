@@ -1,6 +1,6 @@
 import { WordInfo } from "./types";
 
-export const wordCache = {
+export const wordTabState = {
     newWords: {} as { [key: string]: WordInfo},
     deckWords: {} as { [key: string]: WordInfo},
     excludedWords: {} as { [key: string]: WordInfo},

@@ -1,29 +1,29 @@
 import { CardState } from "../common/enums";
 import { hideSvg, plusSvg } from "./svg";
 import * as jmdict from "../../jmdict/jmdict.json";
-import { ColumnExporter, JmdictEntry, WordInfo } from "./types";
-import { WordColumnExporter } from "./columnExporters";
-import { wordCache } from "./wordCache";
+import { ColumnExporter, ExportSettings, JmdictEntry, WordInfo } from "./types";
+import { AllColumnExporters, WordColumnExporter } from "./columnExporters";
+import { wordTabState } from "./wordTabState";
 import { getDragAfterElement, getMaxCount } from "./utils";
 import { exportDeck } from "./export";
+import { ExportSettingsState as exportSettingsState } from "./exportSettingsState";
 
 const jmdictJson = jmdict as { [key: string]: JmdictEntry | undefined };
 const wordListElement = document.getElementById('word-list');
 const deckListElement = document.getElementById('deck-list');
-const columnsToExport = [WordColumnExporter] as ColumnExporter[];
 
 // Button click handlers
 const listedWordRemoveButtonOnClickHandler = async (word: string, count: number, row: HTMLElement) => {
     await setWordState(word, count, CardState.Removed);
     row.remove();
-    wordCache.moveWord(word, 'new', 'excluded');
+    wordTabState.moveWord(word, 'new', 'excluded');
 }
 
 const listedWordAddButtonOnClickHandler = async (word: string, count: number, maxCount: number, row: HTMLElement) => {
     await setWordState(word, count, CardState.InDeck);
     addWordToDeck(word, count, maxCount);
     row.remove();
-    wordCache.moveWord(word, 'new', 'deck');
+    wordTabState.moveWord(word, 'new', 'deck');
 }
 
 // Set the state of a word card. This will update the local storage,
@@ -58,7 +58,7 @@ const setupListedTabWords = async (allWords: WordInfo[]) => {
     const listedWords = allWords.filter(word => word.state === CardState.Listed);
 
     // initialize this part of the word cache
-    wordCache.setNewWords(listedWords.reduce((acc, word) => {
+    wordTabState.setNewWords(listedWords.reduce((acc, word) => {
         acc[word.word] = word;
         return acc;
     }, {} as { [key: string]: WordInfo }));
@@ -168,7 +168,7 @@ const setupDeckTabWords = (allWords: WordInfo[]) => {
     const deckWords = allWords.filter(word => word.state === CardState.InDeck);
 
     // Initialize this part of the cache
-    wordCache.setDeckWords(deckWords.reduce((acc, word) => {
+    wordTabState.setDeckWords(deckWords.reduce((acc, word) => {
         acc[word.word] = word;
         return acc;
     }, {} as { [key: string]: WordInfo }));
@@ -205,7 +205,7 @@ const setupTabs = () => {
     }
 }
 
-const setupExportDialog = (allWords: WordInfo[]) => {
+const setupExportDialog = async (allWords: WordInfo[]) => {
     const exportButton = document.getElementById('export-deck-button');
     const dialog = document.getElementById('export-dialog') as HTMLDialogElement;
     if (exportButton) {
@@ -215,6 +215,21 @@ const setupExportDialog = (allWords: WordInfo[]) => {
     }
 
     // setup column options
+    let exportSettings = (await chrome.storage.local.get(["export_settings"]))["export_settings"] as ExportSettings;
+    if (exportSettings) {
+        const excludedColumns = [] as ColumnExporter[];
+        const includedColumns = [] as ColumnExporter[];
+        for (const exporter of AllColumnExporters) {
+            if (exportSettings.includedExporters.includes(exporter.localStorageKey)) {
+                includedColumns.push(exporter);
+            }
+            else {
+                excludedColumns.push(exporter);
+            }
+        }
+        exportSettingsState.excludedColumns = excludedColumns;
+        exportSettingsState.includedColumns = includedColumns;
+    }
 
     // close the dialog when clicking outside of it
     dialog.addEventListener('click', (event) => {
@@ -240,7 +255,7 @@ const setupExportDialog = (allWords: WordInfo[]) => {
     const finalizeButton = document.getElementById('export-finalize-button');
     if (finalizeButton) {
         finalizeButton.onclick = async () => {
-            exportDeck(columnsToExport, Object.values(wordCache.deckWords));
+            exportDeck(exportSettingsState.includedColumns, Object.values(wordTabState.deckWords));
             dialog.close();
         }
     }
@@ -281,7 +296,7 @@ const setupExportDialog = (allWords: WordInfo[]) => {
 }
 
 // retrieve all data that was stored by the content script
-chrome.storage.local.get(null).then((allData) => {
+chrome.storage.local.get(null).then(async (allData) => {
     const words: WordInfo[] = Object.keys(allData)
         // exclude url data
         .filter(key => key.startsWith('word_'))
@@ -298,5 +313,5 @@ chrome.storage.local.get(null).then((allData) => {
     setupTabs();
     setupListedTabWords(words);
     setupDeckTabWords(words);
-    setupExportDialog(words);
+    await setupExportDialog(words);
 });
