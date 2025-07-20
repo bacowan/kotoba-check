@@ -1,6 +1,7 @@
 import { Readability } from "@mozilla/readability";
 import kuromoji from "kuromoji";
 import { CardState } from "../common/enums";
+import { WordInfo } from "../visualizer/types";
 
 const includedPartsOfSpeech = [
   "名詞",
@@ -27,17 +28,16 @@ const addWordsToDictionary = async (words: kuromoji.IpadicFeatures[]) => {
       !excludedPosDetail.includes(word.pos_detail_2) &&
       !excludedPosDetail.includes(word.pos_detail_3))
     .map(word => ({
-      word: 'word_' + word.basic_form
+      word: 'word_' + word.basic_form,
+      kuromojiId: word.word_id
     }));
-  const wordCounts = await chrome.storage.local.get(knownWords.map(w => w.word));
+  const wordCounts = await chrome.storage.local.get(knownWords.map(w => w.word)) as {[key: string]: Omit<WordInfo, "word">};
   for (const word of knownWords) {
-    if (word.word === "word_する") {
-      console.log(word)
-    }
     if (wordCounts[word.word] === undefined) {
       wordCounts[word.word] = {
         count: 1,
-        state: CardState.Listed
+        state: CardState.Listed,
+        kuromojiId: word.kuromojiId
       };
     }
     else {

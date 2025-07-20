@@ -2,7 +2,7 @@ import { CardState } from "../common/enums";
 import { hideSvg, plusSvg } from "./svg";
 import * as jmdict from "../../jmdict/jmdict.json";
 import { ColumnExporter, ExportSettings, JmdictEntry, WordInfo } from "./types";
-import { AllColumnExporters, WordColumnExporter } from "./columnExporters";
+import { AllColumnExporters, DefaultIncludedColumnExporters, WordColumnExporter } from "./columnExporters";
 import { wordTabState } from "./wordTabState";
 import { getDragAfterElement, getMaxCount } from "./utils";
 import { exportDeck } from "./export";
@@ -223,7 +223,7 @@ const setupExportDialog = async (allWords: WordInfo[]) => {
     if (!exportSettings) {
         exportSettings = {
             shouldIncludeHeaders: true,
-            includedExporters: [WordColumnExporter.localStorageKey]
+            includedExporters: DefaultIncludedColumnExporters
         }
     }
 
@@ -320,7 +320,7 @@ chrome.storage.local.get(null).then(async (allData) => {
             word: key.slice(5),
             count: allData[key].count,
             state: allData[key].state,
-            reading: allData[key].reading }))
+            kuromojiId: allData[key].kuromojiId }))
         // sort by count
         .sort((a, b) => b.count - a.count);
 

@@ -6,8 +6,7 @@ export interface JmdictEntry {
 };
 
 export interface ColumnExporter {
-    localStorageKey: string,
-    includeByDefault: boolean;
+    localStorageKey: string;
     header: string;
     export: (word: WordInfo) => string;
 }
@@ -16,7 +15,7 @@ export interface WordInfo {
     word: string;
     count: number;
     state: CardState;
-    reading: string;
+    kuromojiId: number
 }
 
 export interface ExportSettings {
