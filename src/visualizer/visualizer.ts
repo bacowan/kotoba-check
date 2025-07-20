@@ -6,7 +6,6 @@ import { AllColumnExporters, WordColumnExporter } from "./columnExporters";
 import { wordTabState } from "./wordTabState";
 import { getDragAfterElement, getMaxCount } from "./utils";
 import { exportDeck } from "./export";
-import { ExportSettingsState as exportSettingsState } from "./exportSettingsState";
 
 const jmdictJson = jmdict as { [key: string]: JmdictEntry | undefined };
 const wordListElement = document.getElementById('word-list');
@@ -205,6 +204,8 @@ const setupTabs = () => {
     }
 }
 
+const idsToExporters: {[id: string]: ColumnExporter} = {};
+
 const setupExportDialog = async (allWords: WordInfo[]) => {
     const exportButton = document.getElementById('export-deck-button');
     const dialog = document.getElementById('export-dialog') as HTMLDialogElement;
@@ -215,20 +216,32 @@ const setupExportDialog = async (allWords: WordInfo[]) => {
     }
 
     // setup column options
+    const includedColumnsElement = document.getElementById("included-columns");
+    const excludedColumnsElement = document.getElementById("excluded-columns");
     let exportSettings = (await chrome.storage.local.get(["export_settings"]))["export_settings"] as ExportSettings;
-    if (exportSettings) {
-        const excludedColumns = [] as ColumnExporter[];
-        const includedColumns = [] as ColumnExporter[];
+
+    if (!exportSettings) {
+        exportSettings = {
+            shouldIncludeHeaders: true,
+            includedExporters: [WordColumnExporter.localStorageKey]
+        }
+    }
+
+    if (includedColumnsElement && excludedColumnsElement) {
         for (const exporter of AllColumnExporters) {
+            const exportElement = document.createElement("li");
+            exportElement.classList.add("column-item");
+            exportElement.draggable = true;
+            exportElement.innerText = exporter.header;
+            exportElement.id = "exporter-" + exporter.localStorageKey;
+            idsToExporters["exporter-" + exporter.localStorageKey] = exporter;
             if (exportSettings.includedExporters.includes(exporter.localStorageKey)) {
-                includedColumns.push(exporter);
+                includedColumnsElement.appendChild(exportElement);
             }
             else {
-                excludedColumns.push(exporter);
+                excludedColumnsElement.appendChild(exportElement);
             }
         }
-        exportSettingsState.excludedColumns = excludedColumns;
-        exportSettingsState.includedColumns = includedColumns;
     }
 
     // close the dialog when clicking outside of it
@@ -252,10 +265,12 @@ const setupExportDialog = async (allWords: WordInfo[]) => {
             dialog.close();
         }
     }
+
     const finalizeButton = document.getElementById('export-finalize-button');
-    if (finalizeButton) {
+    if (finalizeButton && includedColumnsElement) {
         finalizeButton.onclick = async () => {
-            exportDeck(exportSettingsState.includedColumns, Object.values(wordTabState.deckWords));
+            const exporters = Array.from(includedColumnsElement.children).map(li => idsToExporters[li.id]);
+            exportDeck(exporters, Object.values(wordTabState.deckWords));
             dialog.close();
         }
     }
