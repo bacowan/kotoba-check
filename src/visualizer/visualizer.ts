@@ -11,6 +11,8 @@ const jmdictJson = jmdict as { [key: string]: JmdictEntry | undefined };
 const wordListElement = document.getElementById('word-list');
 const deckListElement = document.getElementById('deck-list');
 
+let maxCount: number | null;
+
 // Button click handlers
 const listedWordRemoveButtonOnClickHandler = async (word: string, count: number, row: HTMLElement) => {
     await setWordState(word, count, CardState.Removed);
@@ -18,11 +20,18 @@ const listedWordRemoveButtonOnClickHandler = async (word: string, count: number,
     wordTabState.moveWord(word, 'new', 'excluded');
 }
 
-const listedWordAddButtonOnClickHandler = async (word: string, count: number, maxCount: number, row: HTMLElement) => {
+const listedWordAddButtonOnClickHandler = async (word: string, count: number, row: HTMLElement) => {
     await setWordState(word, count, CardState.InDeck);
-    addWordToDeck(word, count, maxCount);
+    addWordToDeck(word, count, maxCount ?? count);
     row.remove();
     wordTabState.moveWord(word, 'new', 'deck');
+}
+
+const deckWordRemoveButtonOnClickHandler = async (word: string, count: number, row: HTMLElement) => {
+    await setWordState(word, count, CardState.Listed);
+    addWordToListed(word, count);
+    row.remove();
+    wordTabState.moveWord(word, 'deck', 'new');
 }
 
 // Set the state of a word card. This will update the local storage,
@@ -49,11 +58,6 @@ const setWordState = async (word: string, count: number, state: CardState) => {
 
 // Setup functions
 const setupListedTabWords = async (allWords: WordInfo[]) => {
-    if (!wordListElement) {
-        console.error('Word list element not found');
-        return;
-    }
-
     const listedWords = allWords.filter(word => word.state === CardState.Listed);
 
     // initialize this part of the word cache
@@ -62,58 +66,61 @@ const setupListedTabWords = async (allWords: WordInfo[]) => {
         return acc;
     }, {} as { [key: string]: WordInfo }));
 
-    const maxCount = getMaxCount(allWords);
 
     // add the words to the UI
     for (const { word, count } of listedWords) {
-        const dictEntry = jmdictJson[word];
-        const reading = dictEntry && dictEntry.readings.length > 0 ? dictEntry.readings[0] : "";
-        const definition = dictEntry && dictEntry.definitions.length > 0 ? dictEntry.definitions[0] : "";
-
-        const row = document.createElement('tr');
-
-        const wordCell = document.createElement('td');
-        wordCell.textContent = word;
-        row.appendChild(wordCell);
-
-        const readingCell = document.createElement('td');
-        readingCell.textContent = reading;
-        row.appendChild(readingCell);
-
-        const definitionCell = document.createElement('td');
-        definitionCell.textContent = definition;
-        row.appendChild(definitionCell);
-
-        const barCell = document.createElement('td');
-        const barContainer = document.createElement('div');
-        barContainer.className = 'bar-container';
-        barContainer.title = count.toString();
-        const barElement = document.createElement('div');
-        barElement.className = 'bar';
-        barElement.style.width = `${count / maxCount * 100}%`;
-        barContainer.appendChild(barElement);
-        barCell.appendChild(barContainer);
-        row.appendChild(barCell);
-
-        const removeCell = document.createElement('td');
-        const removeButton = document.createElement('button');
-        removeButton.innerHTML = hideSvg;
-        removeButton.className = 'remove-button';
-        removeButton.onclick = async () => await listedWordRemoveButtonOnClickHandler(word, count, row);
-        removeCell.appendChild(removeButton);
-        row.appendChild(removeCell);
-
-        const addCell = document.createElement('td');
-        const addButton = document.createElement('button');
-        addButton.innerHTML = plusSvg;
-        addButton.className = 'add-button';
-        addButton.onclick = async () => await listedWordAddButtonOnClickHandler(word, count, maxCount, row);
-        addCell.appendChild(addButton);
-        row.appendChild(addCell);
-
-        wordListElement.appendChild(row);
+        addWordToListed(word, count);
     }
 };
+
+const addWordToListed = (word: string, count: number, ) => {
+    const dictEntry = jmdictJson[word];
+    const reading = dictEntry && dictEntry.readings.length > 0 ? dictEntry.readings[0] : "";
+    const definition = dictEntry && dictEntry.definitions.length > 0 ? dictEntry.definitions[0] : "";
+
+    const row = document.createElement('tr');
+
+    const wordCell = document.createElement('td');
+    wordCell.textContent = word;
+    row.appendChild(wordCell);
+
+    const readingCell = document.createElement('td');
+    readingCell.textContent = reading;
+    row.appendChild(readingCell);
+
+    const definitionCell = document.createElement('td');
+    definitionCell.textContent = definition;
+    row.appendChild(definitionCell);
+
+    const barCell = document.createElement('td');
+    const barContainer = document.createElement('div');
+    barContainer.className = 'bar-container';
+    barContainer.title = count.toString();
+    const barElement = document.createElement('div');
+    barElement.className = 'bar';
+    barElement.style.width = `${count / (maxCount ?? count) * 100}%`;
+    barContainer.appendChild(barElement);
+    barCell.appendChild(barContainer);
+    row.appendChild(barCell);
+
+    const removeCell = document.createElement('td');
+    const removeButton = document.createElement('button');
+    removeButton.innerHTML = hideSvg;
+    removeButton.className = 'remove-button';
+    removeButton.onclick = async () => await listedWordRemoveButtonOnClickHandler(word, count, row);
+    removeCell.appendChild(removeButton);
+    row.appendChild(removeCell);
+
+    const addCell = document.createElement('td');
+    const addButton = document.createElement('button');
+    addButton.innerHTML = plusSvg;
+    addButton.className = 'add-button';
+    addButton.onclick = async () => await listedWordAddButtonOnClickHandler(word, count, row);
+    addCell.appendChild(addButton);
+    row.appendChild(addCell);
+
+    wordListElement?.appendChild(row);
+}
 
 // Add a singluar word to the deck UI (not the cache though)
 const addWordToDeck = (word: string, count: number, maxCount: number) => {
@@ -150,9 +157,7 @@ const addWordToDeck = (word: string, count: number, maxCount: number) => {
     const removeButton = document.createElement('button');
     removeButton.textContent = '－';
     removeButton.className = 'remove-button';
-    removeButton.onclick = async () => {
-        // todo
-    }
+    removeButton.onclick = async () => await deckWordRemoveButtonOnClickHandler(word, count, row);
     removeCell.appendChild(removeButton);
     row.appendChild(removeCell);
 
@@ -313,6 +318,7 @@ const setupExportDialog = async (allWords: WordInfo[]) => {
 
 // retrieve all data that was stored by the content script
 chrome.storage.local.get(null).then(async (allData) => {
+
     const words: WordInfo[] = Object.keys(allData)
         // exclude url data
         .filter(key => key.startsWith('word_'))
@@ -325,6 +331,7 @@ chrome.storage.local.get(null).then(async (allData) => {
         // sort by count
         .sort((a, b) => b.count - a.count);
 
+    maxCount = getMaxCount(words);
 
     setupTabs();
     setupListedTabWords(words);
