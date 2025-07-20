@@ -70,7 +70,7 @@ thead th {
   width: 250px;
 }
 
-.remove-header, .add-header {
+.remove-header, .add-header, .show-header {
   width: 50px;
 }
 
@@ -89,7 +89,8 @@ thead th {
 }
 
 .add-button,
-.remove-button {
+.remove-button,
+.show-button {
   display: block;
   margin-left: auto;
   margin-right: auto;
@@ -107,7 +108,7 @@ thead th {
   background-color: #e53935;
 }
 
-.add-button:hover {
+.add-button:hover, .show-button:hover {
   background-color: #388e3c;
 }
 
@@ -115,7 +116,7 @@ thead th {
   background-color: #c62828;
 }
 
-.remove-button svg, .add-button svg {
+.remove-button svg, .add-button svg, .show-button svg {
   vertical-align: middle;
 }
 

@@ -1,5 +1,5 @@
 import { CardState } from "../common/enums";
-import { hideSvg, plusSvg } from "./svg";
+import { hideSvg, plusSvg, showSvg } from "./svg";
 import * as jmdict from "../../jmdict/jmdict.json";
 import { ColumnExporter, ExportSettings, JmdictEntry, WordInfo } from "./types";
 import { AllColumnExporters, DefaultIncludedColumnExporters, WordColumnExporter } from "./columnExporters";
@@ -10,19 +10,21 @@ import { exportDeck } from "./export";
 const jmdictJson = jmdict as { [key: string]: JmdictEntry | undefined };
 const wordListElement = document.getElementById('word-list');
 const deckListElement = document.getElementById('deck-list');
+const hiddenListElement = document.getElementById('hidden-list');
 
 let maxCount: number | null;
 
 // Button click handlers
 const listedWordRemoveButtonOnClickHandler = async (word: string, count: number, row: HTMLElement) => {
     await setWordState(word, count, CardState.Removed);
+    addWordToHidden(word, count);
     row.remove();
     wordTabState.moveWord(word, 'new', 'excluded');
 }
 
 const listedWordAddButtonOnClickHandler = async (word: string, count: number, row: HTMLElement) => {
     await setWordState(word, count, CardState.InDeck);
-    addWordToDeck(word, count, maxCount ?? count);
+    addWordToDeck(word, count);
     row.remove();
     wordTabState.moveWord(word, 'new', 'deck');
 }
@@ -32,6 +34,13 @@ const deckWordRemoveButtonOnClickHandler = async (word: string, count: number, r
     addWordToListed(word, count);
     row.remove();
     wordTabState.moveWord(word, 'deck', 'new');
+}
+
+const hiddenWordRemoveButtonOnClickHandler = async (word: string, count: number, row: HTMLElement) => {
+    await setWordState(word, count, CardState.Listed);
+    addWordToListed(word, count);
+    row.remove();
+    wordTabState.moveWord(word, 'excluded', 'new');
 }
 
 // Set the state of a word card. This will update the local storage,
@@ -123,7 +132,7 @@ const addWordToListed = (word: string, count: number, ) => {
 }
 
 // Add a singluar word to the deck UI (not the cache though)
-const addWordToDeck = (word: string, count: number, maxCount: number) => {
+const addWordToDeck = (word: string, count: number) => {
     const dictEntry = jmdictJson[word];
     const reading = dictEntry && dictEntry.readings.length > 0 ? dictEntry.readings[0] : "";
     const definition = dictEntry && dictEntry.definitions.length > 0 ? dictEntry.definitions[0] : "";
@@ -148,7 +157,7 @@ const addWordToDeck = (word: string, count: number, maxCount: number) => {
     barContainer.title = count.toString();
     const barElement = document.createElement('div');
     barElement.className = 'bar';
-    barElement.style.width = `${count / maxCount * 100}%`;
+    barElement.style.width = `${count / (maxCount ?? count) * 100}%`;
     barContainer.appendChild(barElement);
     barCell.appendChild(barContainer);
     row.appendChild(barCell);
@@ -164,6 +173,47 @@ const addWordToDeck = (word: string, count: number, maxCount: number) => {
     deckListElement?.appendChild(row);
 }
 
+const addWordToHidden = (word: string, count: number) => {
+    const dictEntry = jmdictJson[word];
+    const reading = dictEntry && dictEntry.readings.length > 0 ? dictEntry.readings[0] : "";
+    const definition = dictEntry && dictEntry.definitions.length > 0 ? dictEntry.definitions[0] : "";
+
+    const row = document.createElement('tr');
+
+    const wordCell = document.createElement('td');
+    wordCell.textContent = word;
+    row.appendChild(wordCell);
+
+    const readingCell = document.createElement('td');
+    readingCell.textContent = reading;
+    row.appendChild(readingCell);
+
+    const definitionCell = document.createElement('td');
+    definitionCell.textContent = definition;
+    row.appendChild(definitionCell);
+
+    const barCell = document.createElement('td');
+    const barContainer = document.createElement('div');
+    barContainer.className = 'bar-container';
+    barContainer.title = count.toString();
+    const barElement = document.createElement('div');
+    barElement.className = 'bar';
+    barElement.style.width = `${count / (maxCount ?? count) * 100}%`;
+    barContainer.appendChild(barElement);
+    barCell.appendChild(barContainer);
+    row.appendChild(barCell);
+
+    const removeCell = document.createElement('td');
+    const removeButton = document.createElement('button');
+    removeButton.innerHTML = showSvg;
+    removeButton.className = 'show-button';
+    removeButton.onclick = async () => await hiddenWordRemoveButtonOnClickHandler(word, count, row);
+    removeCell.appendChild(removeButton);
+    row.appendChild(removeCell);
+
+    hiddenListElement?.appendChild(row);
+}
+
 const setupDeckTabWords = (allWords: WordInfo[]) => {
     if (!deckListElement) {
         console.error('Word list element not found');
@@ -177,11 +227,24 @@ const setupDeckTabWords = (allWords: WordInfo[]) => {
         return acc;
     }, {} as { [key: string]: WordInfo }));
 
-    const maxCount = getMaxCount(allWords);
-
     // Add the words to the UI
     for (const { word, count } of deckWords) {
-        addWordToDeck(word, count, maxCount);
+        addWordToDeck(word, count);
+    }
+}
+
+const setupHiddenTabWords = (allWords: WordInfo[]) => {
+    const hiddenWords = allWords.filter(word => word.state === CardState.Removed);
+    
+    // Initialize this part of the cache
+    wordTabState.setExcludedWords(hiddenWords.reduce((acc, word) => {
+        acc[word.word] = word;
+        return acc;
+    }, {} as { [key: string]: WordInfo }));
+
+    // Add the words to the UI
+    for (const { word, count } of hiddenWords) {
+        addWordToHidden(word, count);
     }
 }
 
@@ -189,22 +252,37 @@ const setupDeckTabWords = (allWords: WordInfo[]) => {
 const setupTabs = () => {
     const newWordsTab = document.getElementById('new-words-tab');
     const deckTab = document.getElementById('deck-tab');
+    const hiddenTab = document.getElementById('hidden-tab');
     const newWordsTable = document.getElementById('new-words-table');
     const deckTable = document.getElementById('deck-table');
+    const hiddenTable = document.getElementById('hidden-table');
 
-    if (newWordsTab && deckTab && newWordsTable && deckTable) {
+    if (newWordsTab && deckTab && hiddenTab && newWordsTable && deckTable && hiddenTable) {
         newWordsTab.onclick = () => {
             newWordsTab.classList.add('selected');
             deckTab.classList.remove('selected');
+            hiddenTab.classList.remove('selected');
             newWordsTable.classList.remove('hidden');
             deckTable.classList.add('hidden');
+            hiddenTable.classList.add('hidden');
         };
 
         deckTab.onclick = () => {
             deckTab.classList.add('selected');
-            newWordsTab?.classList.remove('selected');
+            newWordsTab.classList.remove('selected');
+            hiddenTab.classList.remove('selected');
             newWordsTable.classList.add('hidden');
             deckTable.classList.remove('hidden');
+            hiddenTable.classList.add('hidden');
+        };
+
+        hiddenTab.onclick = () => {
+            hiddenTab.classList.add('selected');
+            deckTab.classList.remove('selected');
+            newWordsTab.classList.remove('selected');
+            hiddenTable.classList.remove('hidden');
+            newWordsTable.classList.add('hidden');
+            deckTable.classList.add('hidden');
         };
     }
 }
@@ -336,5 +414,6 @@ chrome.storage.local.get(null).then(async (allData) => {
     setupTabs();
     setupListedTabWords(words);
     setupDeckTabWords(words);
+    setupHiddenTabWords(words);
     await setupExportDialog(words);
 });
