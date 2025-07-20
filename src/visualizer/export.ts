@@ -2,11 +2,18 @@ import { ColumnExporter, WordInfo } from "./types";
 import { download, parseCsv } from "./utils";
 
 
-export const exportDeck = (columnExporters: ColumnExporter[], deckWords: WordInfo[]) => {
+export const exportDeck = (columnExporters: ColumnExporter[], deckWords: WordInfo[], shouldIncludeHeaders: boolean) => {
     const includedColumns = document.getElementById("included-columns");
     const deckTable = document.getElementById("deck-list");
     if (includedColumns && deckTable) {
         const exportData: string[][] = [];
+        if (shouldIncludeHeaders) {
+            const newRow = [];
+            for (const exporter of columnExporters) {
+                newRow.push(exporter.header);
+            }
+            exportData.push(newRow);
+        }
         
         for (const word of deckWords) {
             const newRow: string[] = [];

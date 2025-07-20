@@ -267,10 +267,11 @@ const setupExportDialog = async (allWords: WordInfo[]) => {
     }
 
     const finalizeButton = document.getElementById('export-finalize-button');
-    if (finalizeButton && includedColumnsElement) {
+    const includeHeadersCheckbox = document.getElementById('include-header-checkbox') as HTMLInputElement;
+    if (finalizeButton && includedColumnsElement && includeHeadersCheckbox) {
         finalizeButton.onclick = async () => {
             const exporters = Array.from(includedColumnsElement.children).map(li => idsToExporters[li.id]);
-            exportDeck(exporters, Object.values(wordTabState.deckWords));
+            exportDeck(exporters, Object.values(wordTabState.deckWords), includeHeadersCheckbox.checked);
             dialog.close();
         }
     }

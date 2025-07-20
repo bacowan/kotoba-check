@@ -49,23 +49,18 @@
 
   <dialog id="export-dialog" class="export-dialog">
     <h2>Export Deck</h2>
-    <label><input type="checkbox"> Include header column</label>
+    <label><input id="include-header-checkbox" type="checkbox"> Include header column</label>
     <p>Drag and drop to include or exclude columns and rearrange them:</p>
     <div class="column-panels">
       <div class="column-panel">
         <div class="panel-title">Included Columns</div>
         <ul class="column-list" id="included-columns">
-          <!--<li id="word-export-column" class="column-item" draggable="true">Word</li>
-          <li id="pronounciation-export-column" class="column-item" draggable="true">Pronounciation</li>
-          <li id="definition-export-column" class="column-item" draggable="true">Definition</li>-->
         </ul>
       </div>
 
       <div class="column-panel">
         <div class="panel-title">Excluded Columns</div>
         <ul class="column-list" id="excluded-columns">
-          <!--<li id="frequency-export-column" class="column-item" draggable="true">Frequency</li>
-          <li id="id-export-column" class="column-item" draggable="true">ID</li>-->
         </ul>
       </div>
     </div>
