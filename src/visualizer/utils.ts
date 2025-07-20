@@ -24,16 +24,16 @@ export const getDragAfterElement = (container: Element, y: number): Element | nu
 }
 
 export const download = (filename: string, text: string) => {
-  var element = document.createElement('a');
-  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-  element.setAttribute('download', filename);
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
 
-  element.style.display = 'none';
-  document.body.appendChild(element);
+    element.style.display = 'none';
+    document.body.appendChild(element);
 
-  element.click();
+    element.click();
 
-  document.body.removeChild(element);
+    document.body.removeChild(element);
 }
 
 export const parseCsv = (values: string[][]): string => {
@@ -42,4 +42,21 @@ export const parseCsv = (values: string[][]): string => {
         ret += row.map(value => `"${value.replace(/"/g, '""')}"`).join(",") + "\n";
     }
     return ret;
+}
+
+export const reverseBinarySearch = <T>(arr: Array<T>, target: T) => {
+    let left = 0;          // inclusive
+    let right = arr.length; // exclusive
+
+    while (left < right) {
+        const mid = (left + right) >>> 1; // unsigned right‑shift = floor((l+r)/2)
+
+        // For descending order, the “smaller” side is to the RIGHT.
+        if (arr[mid] > target) {
+            left = mid + 1;    // search the right half
+        } else {
+            right = mid;       // search the left half (value fits here or before)
+        }
+    }
+    return left;           // insertion point
 }

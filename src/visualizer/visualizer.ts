@@ -1,91 +1,67 @@
 import { CardState } from "../common/enums";
 import { hideSvg, plusSvg, showSvg } from "./svg";
-import * as jmdict from "../../jmdict/jmdict.json";
-import { ColumnExporter, ExportSettings, JmdictEntry, WordInfo } from "./types";
-import { AllColumnExporters, DefaultIncludedColumnExporters, WordColumnExporter } from "./columnExporters";
-import { wordTabState } from "./wordTabState";
-import { getDragAfterElement, getMaxCount } from "./utils";
+import { ColumnExporter, ExportSettings, WordInfo } from "./types";
+import { AllColumnExporters, DefaultIncludedColumnExporters } from "./columnExporters";
+import { getDragAfterElement } from "./utils";
 import { exportDeck } from "./export";
+import { VisualizerController, VisualizerControllerEventTypes } from "./visualizerController";
 
-const jmdictJson = jmdict as { [key: string]: JmdictEntry | undefined };
 const wordListElement = document.getElementById('word-list');
 const deckListElement = document.getElementById('deck-list');
 const hiddenListElement = document.getElementById('hidden-list');
 
-let maxCount: number | null;
-
-// Button click handlers
-const listedWordRemoveButtonOnClickHandler = async (word: string, count: number, row: HTMLElement) => {
-    await setWordState(word, count, CardState.Removed);
-    addWordToHidden(word, count);
-    row.remove();
-    wordTabState.moveWord(word, 'new', 'excluded');
-}
-
-const listedWordAddButtonOnClickHandler = async (word: string, count: number, row: HTMLElement) => {
-    await setWordState(word, count, CardState.InDeck);
-    addWordToDeck(word, count);
-    row.remove();
-    wordTabState.moveWord(word, 'new', 'deck');
-}
-
-const deckWordRemoveButtonOnClickHandler = async (word: string, count: number, row: HTMLElement) => {
-    await setWordState(word, count, CardState.Listed);
-    addWordToListed(word, count);
-    row.remove();
-    wordTabState.moveWord(word, 'deck', 'new');
-}
-
-const hiddenWordRemoveButtonOnClickHandler = async (word: string, count: number, row: HTMLElement) => {
-    await setWordState(word, count, CardState.Listed);
-    addWordToListed(word, count);
-    row.remove();
-    wordTabState.moveWord(word, 'excluded', 'new');
-}
-
-// Set the state of a word card. This will update the local storage,
-// but will not remove it from the UI.
-const setWordState = async (word: string, count: number, state: CardState) => {
-    const wordKey = `word_${word}`;
-    // reload the word to make sure it's up to date
-    const freshWords = await chrome.storage.local.get([wordKey]);
-    let freshWord = freshWords[wordKey];
-    if (!freshWord) {
-        freshWord = {
-            count: count,
-            state: state
-        };
-    }
-    else {
-        freshWord.state = state;
-    }
-
-    await chrome.storage.local.set(
-        { [wordKey]: freshWord }
-    );
-}
+let controller: VisualizerController;
 
 // Setup functions
-const setupListedTabWords = async (allWords: WordInfo[]) => {
-    const listedWords = allWords.filter(word => word.state === CardState.Listed);
-
-    // initialize this part of the word cache
-    wordTabState.setNewWords(listedWords.reduce((acc, word) => {
-        acc[word.word] = word;
-        return acc;
-    }, {} as { [key: string]: WordInfo }));
-
-
+const setupListedTabWords = async () => {
     // add the words to the UI
-    for (const { word, count } of listedWords) {
+    for (const { word, count } of controller.listedWords) {
         addWordToListed(word, count);
     }
+
+    // subscribe for updates
+    controller.on(VisualizerControllerEventTypes.UpdateListedWords, () => {
+        wordListElement?.replaceChildren();
+        for (const { word, count } of controller.listedWords) {
+            addWordToListed(word, count);
+        }
+    });
 };
 
-const addWordToListed = (word: string, count: number, ) => {
-    const dictEntry = jmdictJson[word];
-    const reading = dictEntry && dictEntry.readings.length > 0 ? dictEntry.readings[0] : "";
-    const definition = dictEntry && dictEntry.definitions.length > 0 ? dictEntry.definitions[0] : "";
+const setupDeckTabWords = () => {
+    // Add the words to the UI
+    for (const { word, count } of controller.deckWords) {
+        addWordToDeck(word, count);
+    }
+
+    // subscribe for updates
+    controller.on(VisualizerControllerEventTypes.UpdateDeckWords, () => {
+        deckListElement?.replaceChildren();
+        for (const { word, count } of controller.deckWords) {
+            addWordToDeck(word, count);
+        }
+    });
+}
+
+const setupHiddenTabWords = () => {
+    // Add the words to the UI
+    for (const { word, count } of controller.hiddenWords) {
+        addWordToHidden(word, count);
+    }
+
+    // subscribe for updates
+    controller.on(VisualizerControllerEventTypes.UpdateHiddenWords, () => {
+        hiddenListElement?.replaceChildren();
+        for (const { word, count } of controller.hiddenWords) {
+            addWordToHidden(word, count);
+        }
+    });
+}
+
+const addWordToListed = (word: string, count: number) => {
+    const jmdictEntry = controller.getDictEntry(word);
+    const reading = jmdictEntry.readings.length > 0 ? jmdictEntry.readings[0] : "";
+    const definition = jmdictEntry.definitions.length > 0 ? jmdictEntry.definitions[0] : "";
 
     const row = document.createElement('tr');
 
@@ -107,7 +83,7 @@ const addWordToListed = (word: string, count: number, ) => {
     barContainer.title = count.toString();
     const barElement = document.createElement('div');
     barElement.className = 'bar';
-    barElement.style.width = `${count / (maxCount ?? count) * 100}%`;
+    barElement.style.width = `${count / controller.maxCount * 100}%`;
     barContainer.appendChild(barElement);
     barCell.appendChild(barContainer);
     row.appendChild(barCell);
@@ -116,7 +92,7 @@ const addWordToListed = (word: string, count: number, ) => {
     const removeButton = document.createElement('button');
     removeButton.innerHTML = hideSvg;
     removeButton.className = 'remove-button';
-    removeButton.onclick = async () => await listedWordRemoveButtonOnClickHandler(word, count, row);
+    removeButton.onclick = async () => await controller.moveWord(word, CardState.Hidden);
     removeCell.appendChild(removeButton);
     row.appendChild(removeCell);
 
@@ -124,18 +100,18 @@ const addWordToListed = (word: string, count: number, ) => {
     const addButton = document.createElement('button');
     addButton.innerHTML = plusSvg;
     addButton.className = 'add-button';
-    addButton.onclick = async () => await listedWordAddButtonOnClickHandler(word, count, row);
+    addButton.onclick = async () => await controller.moveWord(word, CardState.InDeck);
     addCell.appendChild(addButton);
     row.appendChild(addCell);
 
     wordListElement?.appendChild(row);
 }
 
-// Add a singluar word to the deck UI (not the cache though)
+// Add a singluar word to the deck UI
 const addWordToDeck = (word: string, count: number) => {
-    const dictEntry = jmdictJson[word];
-    const reading = dictEntry && dictEntry.readings.length > 0 ? dictEntry.readings[0] : "";
-    const definition = dictEntry && dictEntry.definitions.length > 0 ? dictEntry.definitions[0] : "";
+    const jmdictEntry = controller.getDictEntry(word);
+    const reading = jmdictEntry.readings.length > 0 ? jmdictEntry.readings[0] : "";
+    const definition = jmdictEntry.definitions.length > 0 ? jmdictEntry.definitions[0] : "";
 
     const row = document.createElement('tr');
 
@@ -157,7 +133,7 @@ const addWordToDeck = (word: string, count: number) => {
     barContainer.title = count.toString();
     const barElement = document.createElement('div');
     barElement.className = 'bar';
-    barElement.style.width = `${count / (maxCount ?? count) * 100}%`;
+    barElement.style.width = `${count / controller.maxCount * 100}%`;
     barContainer.appendChild(barElement);
     barCell.appendChild(barContainer);
     row.appendChild(barCell);
@@ -166,17 +142,17 @@ const addWordToDeck = (word: string, count: number) => {
     const removeButton = document.createElement('button');
     removeButton.textContent = '－';
     removeButton.className = 'remove-button';
-    removeButton.onclick = async () => await deckWordRemoveButtonOnClickHandler(word, count, row);
+    removeButton.onclick = async () => await controller.moveWord(word, CardState.Listed);
     removeCell.appendChild(removeButton);
     row.appendChild(removeCell);
 
     deckListElement?.appendChild(row);
 }
 
-const addWordToHidden = (word: string, count: number) => {
-    const dictEntry = jmdictJson[word];
-    const reading = dictEntry && dictEntry.readings.length > 0 ? dictEntry.readings[0] : "";
-    const definition = dictEntry && dictEntry.definitions.length > 0 ? dictEntry.definitions[0] : "";
+const addWordToHidden = (word: string, count: number,) => {
+    const jmdictEntry = controller.getDictEntry(word);
+    const reading = jmdictEntry.readings.length > 0 ? jmdictEntry.readings[0] : "";
+    const definition = jmdictEntry.definitions.length > 0 ? jmdictEntry.definitions[0] : "";
 
     const row = document.createElement('tr');
 
@@ -198,7 +174,7 @@ const addWordToHidden = (word: string, count: number) => {
     barContainer.title = count.toString();
     const barElement = document.createElement('div');
     barElement.className = 'bar';
-    barElement.style.width = `${count / (maxCount ?? count) * 100}%`;
+    barElement.style.width = `${count / controller.maxCount * 100}%`;
     barContainer.appendChild(barElement);
     barCell.appendChild(barContainer);
     row.appendChild(barCell);
@@ -207,45 +183,11 @@ const addWordToHidden = (word: string, count: number) => {
     const removeButton = document.createElement('button');
     removeButton.innerHTML = showSvg;
     removeButton.className = 'show-button';
-    removeButton.onclick = async () => await hiddenWordRemoveButtonOnClickHandler(word, count, row);
+    removeButton.onclick = async () => await controller.moveWord(word, CardState.Listed);
     removeCell.appendChild(removeButton);
     row.appendChild(removeCell);
 
     hiddenListElement?.appendChild(row);
-}
-
-const setupDeckTabWords = (allWords: WordInfo[]) => {
-    if (!deckListElement) {
-        console.error('Word list element not found');
-        return;
-    }
-    const deckWords = allWords.filter(word => word.state === CardState.InDeck);
-
-    // Initialize this part of the cache
-    wordTabState.setDeckWords(deckWords.reduce((acc, word) => {
-        acc[word.word] = word;
-        return acc;
-    }, {} as { [key: string]: WordInfo }));
-
-    // Add the words to the UI
-    for (const { word, count } of deckWords) {
-        addWordToDeck(word, count);
-    }
-}
-
-const setupHiddenTabWords = (allWords: WordInfo[]) => {
-    const hiddenWords = allWords.filter(word => word.state === CardState.Removed);
-    
-    // Initialize this part of the cache
-    wordTabState.setExcludedWords(hiddenWords.reduce((acc, word) => {
-        acc[word.word] = word;
-        return acc;
-    }, {} as { [key: string]: WordInfo }));
-
-    // Add the words to the UI
-    for (const { word, count } of hiddenWords) {
-        addWordToHidden(word, count);
-    }
 }
 
 // setup the click handlers for the tab headers
@@ -289,7 +231,7 @@ const setupTabs = () => {
 
 const idsToExporters: {[id: string]: ColumnExporter} = {};
 
-const setupExportDialog = async (allWords: WordInfo[]) => {
+const setupExportDialog = async () => {
     const exportButton = document.getElementById('export-deck-button');
     const dialog = document.getElementById('export-dialog') as HTMLDialogElement;
     if (exportButton) {
@@ -354,7 +296,7 @@ const setupExportDialog = async (allWords: WordInfo[]) => {
     if (finalizeButton && includedColumnsElement && includeHeadersCheckbox) {
         finalizeButton.onclick = async () => {
             const exporters = Array.from(includedColumnsElement.children).map(li => idsToExporters[li.id]);
-            exportDeck(exporters, Object.values(wordTabState.deckWords), includeHeadersCheckbox.checked);
+            exportDeck(exporters, controller.deckWords, includeHeadersCheckbox.checked);
             dialog.close();
         }
     }
@@ -405,15 +347,14 @@ chrome.storage.local.get(null).then(async (allData) => {
             word: key.slice(5),
             count: allData[key].count,
             state: allData[key].state,
-            kuromojiId: allData[key].kuromojiId }))
-        // sort by count
-        .sort((a, b) => b.count - a.count);
+            kuromojiId: allData[key].kuromojiId }));
+    const exportSettings = allData["export_settings"] as ExportSettings | undefined;
 
-    maxCount = getMaxCount(words);
+    controller = new VisualizerController(words, exportSettings);
 
     setupTabs();
-    setupListedTabWords(words);
-    setupDeckTabWords(words);
-    setupHiddenTabWords(words);
-    await setupExportDialog(words);
+    setupListedTabWords();
+    setupDeckTabWords();
+    setupHiddenTabWords();
+    await setupExportDialog();
 });
