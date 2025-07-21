@@ -5,6 +5,7 @@ import { AllColumnExporters, DefaultIncludedColumnExporters } from "./columnExpo
 import { getDragAfterElement } from "./utils";
 import { exportDeck } from "./export";
 import { VisualizerController, VisualizerControllerEventTypes } from "./visualizerController";
+import { DeckWords, ListedWords, VisualizerList } from "./visualizerList";
 
 const wordListElement = document.getElementById('word-list');
 const deckListElement = document.getElementById('deck-list');
@@ -12,219 +13,22 @@ const hiddenListElement = document.getElementById('hidden-list');
 const mainElement = document.getElementById('main');
 
 // initialize page sizes to 1 so that one element will always render
-let wordListPageSize = 1;
-let deckListPageSize = 1;
-let hiddenListPageSize = 1;
-
-let currentWordListPage = 0;
-let currentDeckListPage = 0;
-let currentHiddenListPage = 0;
+let wordList: VisualizerList;
+let deckList: VisualizerList;
+let hiddenList: VisualizerList;
 
 let controller: VisualizerController;
 
-// Setup functions
-const setupListedTabWords = async () => {
-
-    // initial page is 0. This adds the elements to the page as well.
-    setListedPage(0);
-
-    // subscribe for updates
-    controller.on(VisualizerControllerEventTypes.UpdateListedWords, () => {
-        setListedPage(currentDeckListPage);
-    });
-
+const setupPageResizeObserver = () => {
     const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
-        console.log(entries);
-        if (wordListElement && wordListElement.children.length > 0) {
-            const pageSize = getTablePageSize(wordListElement);
-            //if (wordListPageSize !== pageSize) {
-                wordListPageSize = pageSize;
-                setListedPage(currentDeckListPage);
-            //}
-        }
+        wordList.onPageResize();
+        deckList.onPageResize();
+        hiddenList.onPageResize();
     });
-
-    if (wordListElement && mainElement) {
-        resizeObserver.observe(mainElement);
-        // set the initial page size
-        wordListPageSize = getTablePageSize(wordListElement);
-        console.log(wordListPageSize)
-        setListedPage(0);
-    }
-};
-
-const setListedPage = (pageNumber: number) => {
-    const firstElementIndex = pageNumber * wordListPageSize;
-    const lastElementIndex = (pageNumber + 1) * wordListPageSize;
     
-    wordListElement?.replaceChildren();
-    for (const { word, count } of controller.listedWords.slice(firstElementIndex, lastElementIndex)) {
-        addWordToListed(word, count);
+    if (mainElement) {
+        resizeObserver.observe(mainElement);
     }
-
-    currentDeckListPage = pageNumber;
-}
-
-const setupDeckTabWords = () => {
-    // Add the words to the UI
-    for (const { word, count } of controller.deckWords) {
-        addWordToDeck(word, count);
-    }
-
-    // subscribe for updates
-    controller.on(VisualizerControllerEventTypes.UpdateDeckWords, () => {
-        deckListElement?.replaceChildren();
-        for (const { word, count } of controller.deckWords) {
-            addWordToDeck(word, count);
-        }
-    });
-}
-
-const setupHiddenTabWords = () => {
-    // Add the words to the UI
-    for (const { word, count } of controller.hiddenWords) {
-        addWordToHidden(word, count);
-    }
-
-    // subscribe for updates
-    controller.on(VisualizerControllerEventTypes.UpdateHiddenWords, () => {
-        hiddenListElement?.replaceChildren();
-        for (const { word, count } of controller.hiddenWords) {
-            addWordToHidden(word, count);
-        }
-    });
-}
-
-const addWordToListed = (word: string, count: number) => {
-    const jmdictEntry = controller.getDictEntry(word);
-    const reading = jmdictEntry.readings.length > 0 ? jmdictEntry.readings[0] : "";
-    const definition = jmdictEntry.definitions.length > 0 ? jmdictEntry.definitions[0] : "";
-
-    const row = document.createElement('tr');
-
-    const wordCell = document.createElement('td');
-    wordCell.textContent = word;
-    row.appendChild(wordCell);
-
-    const readingCell = document.createElement('td');
-    readingCell.textContent = reading;
-    row.appendChild(readingCell);
-
-    const definitionCell = document.createElement('td');
-    definitionCell.textContent = definition;
-    row.appendChild(definitionCell);
-
-    const barCell = document.createElement('td');
-    const barContainer = document.createElement('div');
-    barContainer.className = 'bar-container';
-    barContainer.title = count.toString();
-    const barElement = document.createElement('div');
-    barElement.className = 'bar';
-    barElement.style.width = `${count / controller.maxCount * 100}%`;
-    barContainer.appendChild(barElement);
-    barCell.appendChild(barContainer);
-    row.appendChild(barCell);
-
-    const removeCell = document.createElement('td');
-    const removeButton = document.createElement('button');
-    removeButton.innerHTML = hideSvg;
-    removeButton.className = 'remove-button';
-    removeButton.onclick = async () => await controller.moveWord(word, CardState.Hidden);
-    removeCell.appendChild(removeButton);
-    row.appendChild(removeCell);
-
-    const addCell = document.createElement('td');
-    const addButton = document.createElement('button');
-    addButton.innerHTML = plusSvg;
-    addButton.className = 'add-button';
-    addButton.onclick = async () => await controller.moveWord(word, CardState.InDeck);
-    addCell.appendChild(addButton);
-    row.appendChild(addCell);
-
-    wordListElement?.appendChild(row);
-}
-
-// Add a singluar word to the deck UI
-const addWordToDeck = (word: string, count: number) => {
-    const jmdictEntry = controller.getDictEntry(word);
-    const reading = jmdictEntry.readings.length > 0 ? jmdictEntry.readings[0] : "";
-    const definition = jmdictEntry.definitions.length > 0 ? jmdictEntry.definitions[0] : "";
-
-    const row = document.createElement('tr');
-
-    const wordCell = document.createElement('td');
-    wordCell.textContent = word;
-    row.appendChild(wordCell);
-
-    const readingCell = document.createElement('td');
-    readingCell.textContent = reading;
-    row.appendChild(readingCell);
-
-    const definitionCell = document.createElement('td');
-    definitionCell.textContent = definition;
-    row.appendChild(definitionCell);
-
-    const barCell = document.createElement('td');
-    const barContainer = document.createElement('div');
-    barContainer.className = 'bar-container';
-    barContainer.title = count.toString();
-    const barElement = document.createElement('div');
-    barElement.className = 'bar';
-    barElement.style.width = `${count / controller.maxCount * 100}%`;
-    barContainer.appendChild(barElement);
-    barCell.appendChild(barContainer);
-    row.appendChild(barCell);
-
-    const removeCell = document.createElement('td');
-    const removeButton = document.createElement('button');
-    removeButton.textContent = '－';
-    removeButton.className = 'remove-button';
-    removeButton.onclick = async () => await controller.moveWord(word, CardState.Listed);
-    removeCell.appendChild(removeButton);
-    row.appendChild(removeCell);
-
-    deckListElement?.appendChild(row);
-}
-
-const addWordToHidden = (word: string, count: number,) => {
-    const jmdictEntry = controller.getDictEntry(word);
-    const reading = jmdictEntry.readings.length > 0 ? jmdictEntry.readings[0] : "";
-    const definition = jmdictEntry.definitions.length > 0 ? jmdictEntry.definitions[0] : "";
-
-    const row = document.createElement('tr');
-
-    const wordCell = document.createElement('td');
-    wordCell.textContent = word;
-    row.appendChild(wordCell);
-
-    const readingCell = document.createElement('td');
-    readingCell.textContent = reading;
-    row.appendChild(readingCell);
-
-    const definitionCell = document.createElement('td');
-    definitionCell.textContent = definition;
-    row.appendChild(definitionCell);
-
-    const barCell = document.createElement('td');
-    const barContainer = document.createElement('div');
-    barContainer.className = 'bar-container';
-    barContainer.title = count.toString();
-    const barElement = document.createElement('div');
-    barElement.className = 'bar';
-    barElement.style.width = `${count / controller.maxCount * 100}%`;
-    barContainer.appendChild(barElement);
-    barCell.appendChild(barContainer);
-    row.appendChild(barCell);
-
-    const removeCell = document.createElement('td');
-    const removeButton = document.createElement('button');
-    removeButton.innerHTML = showSvg;
-    removeButton.className = 'show-button';
-    removeButton.onclick = async () => await controller.moveWord(word, CardState.Listed);
-    removeCell.appendChild(removeButton);
-    row.appendChild(removeCell);
-
-    hiddenListElement?.appendChild(row);
 }
 
 // setup the click handlers for the tab headers
@@ -264,6 +68,10 @@ const setupTabs = () => {
             deckTable.classList.add('hidden');
         };
     }
+
+    deckList.setupList();
+    hiddenList.setupList();
+    wordList.setupList();
 }
 
 const idsToExporters: {[id: string]: ColumnExporter} = {};
@@ -373,24 +181,6 @@ const setupExportDialog = async () => {
     }
 }
 
-const getTablePageSize = (tableBody: HTMLElement): number => {
-    const rows = Array.from(tableBody.children) as HTMLTableRowElement[];
-    if (rows.length > 0) {
-        const rowHeight = rows[0].offsetHeight;
-
-        const tableElement = tableBody.parentElement as HTMLElement;
-        const tableHeaderElement = tableBody.children[0] as HTMLElement;
-        const tableWrapper = tableElement.parentElement as HTMLElement;
-        const bodyHeight = tableWrapper.offsetHeight - tableHeaderElement.offsetHeight;
-        // make sure the page size never goes below 1 so that one element always renders.
-        return Math.max(Math.floor(bodyHeight / rowHeight), 1);
-    }
-    else {
-        // If there is no row to sample, assume we can always display at least 1 row.
-        return 1;
-    }
-}
-
 // retrieve all data that was stored by the content script
 chrome.storage.local.get(null).then(async (allData) => {
 
@@ -407,9 +197,17 @@ chrome.storage.local.get(null).then(async (allData) => {
 
     controller = new VisualizerController(words, exportSettings);
 
+    if (deckListElement) {
+        deckList = new DeckWords(deckListElement, controller);
+    }
+    if (wordListElement) {
+        wordList = new ListedWords(wordListElement, controller)
+    }
+    if (hiddenListElement) {
+        hiddenList = new ListedWords(hiddenListElement, controller)
+    }
+
     setupTabs();
-    setupListedTabWords();
-    setupDeckTabWords();
-    setupHiddenTabWords();
     await setupExportDialog();
+    setupPageResizeObserver();
 });
