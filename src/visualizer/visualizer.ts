@@ -9,24 +9,61 @@ import { VisualizerController, VisualizerControllerEventTypes } from "./visualiz
 const wordListElement = document.getElementById('word-list');
 const deckListElement = document.getElementById('deck-list');
 const hiddenListElement = document.getElementById('hidden-list');
+const mainElement = document.getElementById('main');
+
+// initialize page sizes to 1 so that one element will always render
+let wordListPageSize = 1;
+let deckListPageSize = 1;
+let hiddenListPageSize = 1;
+
+let currentWordListPage = 0;
+let currentDeckListPage = 0;
+let currentHiddenListPage = 0;
 
 let controller: VisualizerController;
 
 // Setup functions
 const setupListedTabWords = async () => {
-    // add the words to the UI
-    for (const { word, count } of controller.listedWords) {
-        addWordToListed(word, count);
-    }
+
+    // initial page is 0. This adds the elements to the page as well.
+    setListedPage(0);
 
     // subscribe for updates
     controller.on(VisualizerControllerEventTypes.UpdateListedWords, () => {
-        wordListElement?.replaceChildren();
-        for (const { word, count } of controller.listedWords) {
-            addWordToListed(word, count);
+        setListedPage(currentDeckListPage);
+    });
+
+    const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
+        console.log(entries);
+        if (wordListElement && wordListElement.children.length > 0) {
+            const pageSize = getTablePageSize(wordListElement);
+            //if (wordListPageSize !== pageSize) {
+                wordListPageSize = pageSize;
+                setListedPage(currentDeckListPage);
+            //}
         }
     });
+
+    if (wordListElement && mainElement) {
+        resizeObserver.observe(mainElement);
+        // set the initial page size
+        wordListPageSize = getTablePageSize(wordListElement);
+        console.log(wordListPageSize)
+        setListedPage(0);
+    }
 };
+
+const setListedPage = (pageNumber: number) => {
+    const firstElementIndex = pageNumber * wordListPageSize;
+    const lastElementIndex = (pageNumber + 1) * wordListPageSize;
+    
+    wordListElement?.replaceChildren();
+    for (const { word, count } of controller.listedWords.slice(firstElementIndex, lastElementIndex)) {
+        addWordToListed(word, count);
+    }
+
+    currentDeckListPage = pageNumber;
+}
 
 const setupDeckTabWords = () => {
     // Add the words to the UI
@@ -333,6 +370,24 @@ const setupExportDialog = async () => {
             // drop is handled by dragover + insert logic above
             event.preventDefault();
         });
+    }
+}
+
+const getTablePageSize = (tableBody: HTMLElement): number => {
+    const rows = Array.from(tableBody.children) as HTMLTableRowElement[];
+    if (rows.length > 0) {
+        const rowHeight = rows[0].offsetHeight;
+
+        const tableElement = tableBody.parentElement as HTMLElement;
+        const tableHeaderElement = tableBody.children[0] as HTMLElement;
+        const tableWrapper = tableElement.parentElement as HTMLElement;
+        const bodyHeight = tableWrapper.offsetHeight - tableHeaderElement.offsetHeight;
+        // make sure the page size never goes below 1 so that one element always renders.
+        return Math.max(Math.floor(bodyHeight / rowHeight), 1);
+    }
+    else {
+        // If there is no row to sample, assume we can always display at least 1 row.
+        return 1;
     }
 }
 

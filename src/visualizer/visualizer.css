@@ -37,7 +37,6 @@ main {
   height: 100%;
   overflow: hidden;
   margin: 0 12px;
-  overflow-y: auto;
 }
 
 table {
