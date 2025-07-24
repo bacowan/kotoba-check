@@ -257,3 +257,7 @@ thead th {
 label {
   vertical-align: middle;
 }
+
+.page-info {
+  margin: 1em;
+}

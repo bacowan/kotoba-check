@@ -6,6 +6,7 @@ import { VisualizerController, VisualizerControllerEventTypes } from "./visualiz
 export class VisualizerList {
     pageSize = 1;
     currentPage = 0;
+    totalPages = 1;
     controller: VisualizerController;
     updateEventType: VisualizerControllerEventTypes;
     listElement: HTMLElement;
@@ -27,11 +28,18 @@ export class VisualizerList {
         });
     
         if (this.listElement) {
-            // set the initial page size
-            this.pageSize = this.getTablePageSize(this.listElement);
-            // set the page size to itself to refresh the UI
-            this.setCurrentPage(this.currentPage);
+            //requestAnimationFrame(() => {
+                // set the initial page size
+                this.pageSize = this.getTablePageSize(this.listElement);
+                this.totalPages = Math.ceil(this.getWordList().length / this.pageSize);
+                // set the page size to itself to refresh the UI
+                this.setCurrentPage(this.currentPage);
+            //})
         }
+    }
+
+    movePage(count: number) {
+        this.setCurrentPage(this.currentPage + count);
     }
 
     setCurrentPage(pageNumber: number) {
@@ -50,6 +58,7 @@ export class VisualizerList {
         const pageSize = this.getTablePageSize(this.listElement);
         if (this.pageSize !== pageSize) {
             this.pageSize = pageSize;
+            this.totalPages = Math.ceil(this.getWordList().length / this.pageSize);
             // setting the page to the current page refreshes the data
             this.setCurrentPage(this.currentPage);
         }

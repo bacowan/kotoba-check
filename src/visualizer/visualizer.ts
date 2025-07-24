@@ -5,22 +5,28 @@ import { AllColumnExporters, DefaultIncludedColumnExporters } from "./columnExpo
 import { getDragAfterElement } from "./utils";
 import { exportDeck } from "./export";
 import { VisualizerController, VisualizerControllerEventTypes } from "./visualizerController";
-import { DeckWords, ListedWords, VisualizerList } from "./visualizerList";
+import { DeckWords, HiddenWords, ListedWords, VisualizerList } from "./visualizerList";
+import { TabUiController } from "./tabUiController";
+import { TabWrapperUiController as TabWrapperUiController } from "./tabWrapperUiController";
 
 const wordListElement = document.getElementById('word-list');
 const deckListElement = document.getElementById('deck-list');
 const hiddenListElement = document.getElementById('hidden-list');
 const mainElement = document.getElementById('main');
 
-// initialize page sizes to 1 so that one element will always render
 let wordList: VisualizerList;
 let deckList: VisualizerList;
 let hiddenList: VisualizerList;
+let currentDeckList: VisualizerList;
+
+let deckTabUIController: TabUiController;
+let hiddenTabUIController: TabUiController;
+let listedTabUIController: TabUiController;
 
 let controller: VisualizerController;
 
 const setupPageResizeObserver = () => {
-    const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
+    const resizeObserver = new ResizeObserver((_: ResizeObserverEntry[]) => {
         wordList.onPageResize();
         deckList.onPageResize();
         hiddenList.onPageResize();
@@ -33,41 +39,30 @@ const setupPageResizeObserver = () => {
 
 // setup the click handlers for the tab headers
 const setupTabs = () => {
-    const newWordsTab = document.getElementById('new-words-tab');
-    const deckTab = document.getElementById('deck-tab');
-    const hiddenTab = document.getElementById('hidden-tab');
-    const newWordsTable = document.getElementById('new-words-table');
-    const deckTable = document.getElementById('deck-table');
-    const hiddenTable = document.getElementById('hidden-table');
-
-    if (newWordsTab && deckTab && hiddenTab && newWordsTable && deckTable && hiddenTable) {
-        newWordsTab.onclick = () => {
-            newWordsTab.classList.add('selected');
-            deckTab.classList.remove('selected');
-            hiddenTab.classList.remove('selected');
-            newWordsTable.classList.remove('hidden');
-            deckTable.classList.add('hidden');
-            hiddenTable.classList.add('hidden');
-        };
-
-        deckTab.onclick = () => {
-            deckTab.classList.add('selected');
-            newWordsTab.classList.remove('selected');
-            hiddenTab.classList.remove('selected');
-            newWordsTable.classList.add('hidden');
-            deckTable.classList.remove('hidden');
-            hiddenTable.classList.add('hidden');
-        };
-
-        hiddenTab.onclick = () => {
-            hiddenTab.classList.add('selected');
-            deckTab.classList.remove('selected');
-            newWordsTab.classList.remove('selected');
-            hiddenTable.classList.remove('hidden');
-            newWordsTable.classList.add('hidden');
-            deckTable.classList.add('hidden');
-        };
-    }
+    deckTabUIController = new TabUiController(
+        document.getElementById('deck-tab'),
+        document.getElementById('deck-table'),
+        () => {
+            currentDeckList = deckList;
+            refreshPaginationArea();
+        });
+    hiddenTabUIController = new TabUiController(
+        document.getElementById('hidden-tab'),
+        document.getElementById('hidden-table'),
+        () => {
+            currentDeckList = hiddenList;
+            refreshPaginationArea();
+        });
+    listedTabUIController = new TabUiController(
+        document.getElementById('new-words-tab'),
+        document.getElementById('new-words-table'),
+        () => {
+            currentDeckList = deckList;
+            refreshPaginationArea();
+        });
+    deckTabUIController.setConnectedTabs(hiddenTabUIController, listedTabUIController);
+    hiddenTabUIController.setConnectedTabs(deckTabUIController, listedTabUIController);
+    listedTabUIController.setConnectedTabs(deckTabUIController, hiddenTabUIController);
 
     deckList.setupList();
     hiddenList.setupList();
@@ -89,7 +84,7 @@ const setupExportDialog = async () => {
     const includedColumnsElement = document.getElementById("included-columns");
     const excludedColumnsElement = document.getElementById("excluded-columns");
     let exportSettings = (await chrome.storage.local.get(["export_settings"]))["export_settings"] as ExportSettings;
-
+ 
     if (!exportSettings) {
         exportSettings = {
             shouldIncludeHeaders: true,
@@ -181,6 +176,20 @@ const setupExportDialog = async () => {
     }
 }
 
+const refreshPaginationArea = () => {
+    const prevPageButton = document.getElementById("prev-page-button");
+    const nextPageButton = document.getElementById("next-page-button");
+    const currentPageText = document.getElementById("current-page");
+    const totalPagesText = document.getElementById("total-pages");
+
+    if (prevPageButton && nextPageButton && currentPageText && totalPagesText) {
+        currentPageText.innerText = (currentDeckList.currentPage + 1).toString();
+        totalPagesText.innerText = currentDeckList.totalPages.toString();
+        prevPageButton.onclick = () => currentDeckList.movePage(-1);
+        nextPageButton.onclick = () => currentDeckList.movePage(1);
+    }
+}
+
 // retrieve all data that was stored by the content script
 chrome.storage.local.get(null).then(async (allData) => {
 
@@ -201,13 +210,15 @@ chrome.storage.local.get(null).then(async (allData) => {
         deckList = new DeckWords(deckListElement, controller);
     }
     if (wordListElement) {
-        wordList = new ListedWords(wordListElement, controller)
+        wordList = new ListedWords(wordListElement, controller);
+        currentDeckList = wordList;
     }
     if (hiddenListElement) {
-        hiddenList = new ListedWords(hiddenListElement, controller)
+        hiddenList = new HiddenWords(hiddenListElement, controller);
     }
 
     setupTabs();
     await setupExportDialog();
     setupPageResizeObserver();
+    refreshPaginationArea();
 });
