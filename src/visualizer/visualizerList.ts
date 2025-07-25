@@ -28,18 +28,19 @@ export class VisualizerList {
         });
     
         if (this.listElement) {
-            //requestAnimationFrame(() => {
-                // set the initial page size
-                this.pageSize = this.getTablePageSize(this.listElement);
-                this.totalPages = Math.ceil(this.getWordList().length / this.pageSize);
-                // set the page size to itself to refresh the UI
-                this.setCurrentPage(this.currentPage);
-            //})
+            // set the initial page size
+            this.pageSize = this.getTablePageSize(this.listElement);
+            this.totalPages = Math.ceil(this.getWordList().length / this.pageSize);
+            // set the page size to itself to refresh the UI
+            this.setCurrentPage(this.currentPage);
         }
     }
 
     movePage(count: number) {
-        this.setCurrentPage(this.currentPage + count);
+        const newPageNumber = this.currentPage + count;
+        if (newPageNumber >= 0 && newPageNumber < this.totalPages) {
+            this.setCurrentPage(this.currentPage + count);
+        }
     }
 
     setCurrentPage(pageNumber: number) {

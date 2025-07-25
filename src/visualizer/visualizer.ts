@@ -57,7 +57,7 @@ const setupTabs = () => {
         document.getElementById('new-words-tab'),
         document.getElementById('new-words-table'),
         () => {
-            currentDeckList = deckList;
+            currentDeckList = wordList;
             refreshPaginationArea();
         });
     deckTabUIController.setConnectedTabs(hiddenTabUIController, listedTabUIController);
@@ -176,17 +176,29 @@ const setupExportDialog = async () => {
     }
 }
 
+const updatePaginationText = () => {
+    const currentPageText = document.getElementById("current-page");
+    const totalPagesText = document.getElementById("total-pages");
+    if (currentPageText && totalPagesText) {
+        currentPageText.innerText = (currentDeckList.currentPage + 1).toString();
+        totalPagesText.innerText = currentDeckList.totalPages.toString();
+    }
+}
+
 const refreshPaginationArea = () => {
     const prevPageButton = document.getElementById("prev-page-button");
     const nextPageButton = document.getElementById("next-page-button");
-    const currentPageText = document.getElementById("current-page");
-    const totalPagesText = document.getElementById("total-pages");
 
-    if (prevPageButton && nextPageButton && currentPageText && totalPagesText) {
-        currentPageText.innerText = (currentDeckList.currentPage + 1).toString();
-        totalPagesText.innerText = currentDeckList.totalPages.toString();
-        prevPageButton.onclick = () => currentDeckList.movePage(-1);
-        nextPageButton.onclick = () => currentDeckList.movePage(1);
+    if (prevPageButton && nextPageButton) {
+        updatePaginationText();
+        prevPageButton.onclick = () => {
+            currentDeckList.movePage(-1);
+            updatePaginationText();
+        }
+        nextPageButton.onclick = () => {
+            currentDeckList.movePage(1);
+            updatePaginationText();
+        }
     }
 }
 
