@@ -1,7 +1,12 @@
 import { CardState } from "../common/enums";
+import { Event } from "../common/event";
 import { hideSvg, plusSvg, showSvg } from "./svg";
 import { WordInfo } from "./types";
 import { VisualizerController, VisualizerControllerEventTypes } from "./visualizerController";
+
+export enum VisualizerListEventTypes {
+    PageInfoChanged
+}
 
 export class VisualizerList {
     pageSize = 1;
@@ -10,6 +15,8 @@ export class VisualizerList {
     controller: VisualizerController;
     updateEventType: VisualizerControllerEventTypes;
     listElement: HTMLElement;
+
+    pageInfoUpdatedEvent: Event<[currentPage: number, totalPages: number]> = new Event();
 
     constructor(updateEventType: VisualizerControllerEventTypes, listElement: HTMLElement, controller: VisualizerController) {
         this.controller = controller;
@@ -27,13 +34,9 @@ export class VisualizerList {
             this.setCurrentPage(this.currentPage);
         });
     
-        if (this.listElement) {
-            // set the initial page size
-            this.pageSize = this.getTablePageSize(this.listElement);
-            this.totalPages = Math.ceil(this.getWordList().length / this.pageSize);
-            // set the page size to itself to refresh the UI
-            this.setCurrentPage(this.currentPage);
-        }
+        this.recalculatePages();
+
+        this.pageInfoUpdatedEvent.trigger(this.currentPage, this.totalPages);
     }
 
     movePage(count: number) {
@@ -51,10 +54,12 @@ export class VisualizerList {
             }
 
             this.currentPage = pageNumber;
+            
+            this.pageInfoUpdatedEvent.trigger(this.currentPage, this.totalPages);
         }
     }
 
-    onPageResize(): void {
+    recalculatePages(): void {
         const pageSize = this.getTablePageSize(this.listElement);
         if (this.pageSize !== pageSize) {
             this.pageSize = pageSize;

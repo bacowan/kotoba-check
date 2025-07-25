@@ -7,7 +7,6 @@ import { exportDeck } from "./export";
 import { VisualizerController, VisualizerControllerEventTypes } from "./visualizerController";
 import { DeckWords, HiddenWords, ListedWords, VisualizerList } from "./visualizerList";
 import { TabUiController } from "./tabUiController";
-import { TabWrapperUiController as TabWrapperUiController } from "./tabWrapperUiController";
 
 const wordListElement = document.getElementById('word-list');
 const deckListElement = document.getElementById('deck-list');
@@ -27,9 +26,9 @@ let controller: VisualizerController;
 
 const setupPageResizeObserver = () => {
     const resizeObserver = new ResizeObserver((_: ResizeObserverEntry[]) => {
-        wordList.onPageResize();
-        deckList.onPageResize();
-        hiddenList.onPageResize();
+        wordList.recalculatePages();
+        deckList.recalculatePages();
+        hiddenList.recalculatePages();
     });
     
     if (mainElement) {
@@ -41,28 +40,32 @@ const setupPageResizeObserver = () => {
 const setupTabs = () => {
     deckTabUIController = new TabUiController(
         document.getElementById('deck-tab'),
-        document.getElementById('deck-table'),
-        () => {
-            currentDeckList = deckList;
-            refreshPaginationArea();
-        });
+        document.getElementById('deck-table'));
     hiddenTabUIController = new TabUiController(
         document.getElementById('hidden-tab'),
-        document.getElementById('hidden-table'),
-        () => {
-            currentDeckList = hiddenList;
-            refreshPaginationArea();
-        });
+        document.getElementById('hidden-table'));
     listedTabUIController = new TabUiController(
         document.getElementById('new-words-tab'),
-        document.getElementById('new-words-table'),
-        () => {
-            currentDeckList = wordList;
-            refreshPaginationArea();
-        });
+        document.getElementById('new-words-table'));
     deckTabUIController.setConnectedTabs(hiddenTabUIController, listedTabUIController);
     hiddenTabUIController.setConnectedTabs(deckTabUIController, listedTabUIController);
     listedTabUIController.setConnectedTabs(deckTabUIController, hiddenTabUIController);
+
+    deckTabUIController.onTabEnabledEvent.subscribe(() => {
+        currentDeckList = deckList;
+        deckList.recalculatePages();
+        updatePaginationText(deckList.currentPage, deckList.totalPages);
+    });
+    hiddenTabUIController.onTabEnabledEvent.subscribe(() => {
+        currentDeckList = hiddenList;
+        hiddenList.recalculatePages();
+        updatePaginationText(hiddenList.currentPage, hiddenList.totalPages);
+    });
+    listedTabUIController.onTabEnabledEvent.subscribe(() => {
+        currentDeckList = wordList;
+        wordList.recalculatePages();
+        updatePaginationText(wordList.currentPage, wordList.totalPages);
+    });
 
     deckList.setupList();
     hiddenList.setupList();
@@ -176,35 +179,32 @@ const setupExportDialog = async () => {
     }
 }
 
-const updatePaginationText = () => {
+const updatePaginationText = (currentPage: number, totalPages: number) => {
     const currentPageText = document.getElementById("current-page") as HTMLInputElement;
     const totalPagesText = document.getElementById("total-pages");
     if (currentPageText && totalPagesText) {
-        currentPageText.value = (currentDeckList.currentPage + 1).toString();
-        totalPagesText.innerText = currentDeckList.totalPages.toString();
+        currentPageText.value = (currentPage + 1).toString();
+        totalPagesText.innerText = totalPages.toString();
     }
 }
 
-const refreshPaginationArea = () => {
+const setupPaginationArea = () => {
     const prevPageButton = document.getElementById("prev-page-button");
     const nextPageButton = document.getElementById("next-page-button");
     const currentPageText = document.getElementById("current-page") as HTMLInputElement;
 
     if (prevPageButton && nextPageButton && currentPageText) {
-        updatePaginationText();
+        updatePaginationText(currentDeckList.currentPage, currentDeckList.totalPages);
         currentPageText.onchange = (event) => {
             if (event.target && event.target instanceof HTMLInputElement) {
                 currentDeckList.setCurrentPage(parseInt(event.target.value) - 1);
-                updatePaginationText();
             }
         }
         prevPageButton.onclick = () => {
             currentDeckList.movePage(-1);
-            updatePaginationText();
         }
         nextPageButton.onclick = () => {
             currentDeckList.movePage(1);
-            updatePaginationText();
         }
     }
 }
@@ -227,17 +227,20 @@ chrome.storage.local.get(null).then(async (allData) => {
 
     if (deckListElement) {
         deckList = new DeckWords(deckListElement, controller);
+        deckList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => updatePaginationText(currentPage, totalPages));
     }
     if (wordListElement) {
         wordList = new ListedWords(wordListElement, controller);
+        wordList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => updatePaginationText(currentPage, totalPages));
         currentDeckList = wordList;
     }
     if (hiddenListElement) {
         hiddenList = new HiddenWords(hiddenListElement, controller);
+        hiddenList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => updatePaginationText(currentPage, totalPages));
     }
 
     setupTabs();
     await setupExportDialog();
     setupPageResizeObserver();
-    refreshPaginationArea();
+    setupPaginationArea();
 });

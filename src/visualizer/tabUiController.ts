@@ -1,11 +1,13 @@
+import { Event } from "../common/event";
+
 export class TabUiController {
     tabElement: HTMLElement | null;
     contentElement: HTMLElement | null;
     connectedTabs: TabUiController[] | undefined;
     isSelected: boolean;
-    onTabEnabledListeners: (() => void)[] = [];
+    onTabEnabledEvent: Event<[]> = new Event<[]>();
 
-    constructor(tabElement: HTMLElement | null, contentElement: HTMLElement | null, onTabEnabled: () => void) {
+    constructor(tabElement: HTMLElement | null, contentElement: HTMLElement | null) {
         this.tabElement = tabElement;
         this.contentElement = contentElement;
         if (tabElement?.classList.contains("selected")) {
@@ -23,7 +25,7 @@ export class TabUiController {
                         tab.disable();
                     }
                 }
-                onTabEnabled();
+                this.onTabEnabledEvent.trigger();
             }
         }
     }
@@ -42,9 +44,5 @@ export class TabUiController {
         this.isSelected = false;
         this.tabElement?.classList.remove("selected");
         this.contentElement?.classList.add("hidden");
-    }
-    
-    onTabClicked(callback: () => void) {
-        this.onTabEnabledListeners.push(callback);
     }
 }
