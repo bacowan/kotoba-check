@@ -54,9 +54,9 @@ export class VisualizerList {
             }
 
             this.currentPage = pageNumber;
-            
-            this.pageInfoUpdatedEvent.trigger(this.currentPage, this.totalPages);
         }
+            
+        this.pageInfoUpdatedEvent.trigger(this.currentPage, this.totalPages);
     }
 
     recalculatePages(): void {
