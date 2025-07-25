@@ -13,14 +13,14 @@ export class VisualizerList {
     currentPage = 0;
     totalPages = 1;
     controller: VisualizerController;
-    updateEventType: VisualizerControllerEventTypes;
+    wordMovedEvent: (controller: VisualizerController) => Event<[]>;
     listElement: HTMLElement;
 
     pageInfoUpdatedEvent: Event<[currentPage: number, totalPages: number]> = new Event();
 
-    constructor(updateEventType: VisualizerControllerEventTypes, listElement: HTMLElement, controller: VisualizerController) {
+    constructor(wordMovedEvent: (controller: VisualizerController) => Event<[]>, listElement: HTMLElement, controller: VisualizerController) {
         this.controller = controller;
-        this.updateEventType = updateEventType;
+        this.wordMovedEvent = wordMovedEvent;
         this.listElement = listElement;
     }
 
@@ -29,7 +29,7 @@ export class VisualizerList {
         this.setCurrentPage(0);
     
         // subscribe for updates
-        this.controller.on(this.updateEventType, () => {
+        this.wordMovedEvent(this.controller).subscribe(() => {
             // setting the page to itself will trigger a rerender
             this.setCurrentPage(this.currentPage);
         });
@@ -98,7 +98,7 @@ export class VisualizerList {
 
 export class DeckWords extends VisualizerList {
     constructor(listElement: HTMLElement, controller: VisualizerController) {
-        super(VisualizerControllerEventTypes.UpdateDeckWords, listElement, controller);
+        super(controller => controller.wordMovedToDeckEvent, listElement, controller);
     }
 
     getWordList(): WordInfo[] {
@@ -149,7 +149,7 @@ export class DeckWords extends VisualizerList {
 
 export class ListedWords extends VisualizerList {
     constructor(listElement: HTMLElement, controller: VisualizerController) {
-        super(VisualizerControllerEventTypes.UpdateListedWords, listElement, controller);
+        super(controller => controller.wordMovedToListedEvent, listElement, controller);
     }
 
     getWordList(): WordInfo[] {
@@ -208,7 +208,7 @@ export class ListedWords extends VisualizerList {
 
 export class HiddenWords extends VisualizerList {
     constructor(listElement: HTMLElement, controller: VisualizerController) {
-        super(VisualizerControllerEventTypes.UpdateHiddenWords, listElement, controller);
+        super(controller => controller.wordMovedToHiddenEvent, listElement, controller);
     }
 
     getWordList(): WordInfo[] {

@@ -3,6 +3,7 @@ import { DefaultIncludedColumnExporters } from "./columnExporters";
 import { ExportSettings, JmdictEntry, WordInfo } from "./types";
 import { reverseBinarySearch, getMaxCount } from "./utils";
 import * as jmdict from "../../jmdict/jmdict.json";
+import { Event } from "../common/event";
 
 const jmdictJson = jmdict as { [key: string]: JmdictEntry | undefined };
 
@@ -20,9 +21,9 @@ export class VisualizerController {
     exportSettings: ExportSettings;
     maxCount: number;
 
-    wordMovedToListedSubscribers: (() => void)[] = [];
-    wordMovedToHiddenSubscribers: (() => void)[] = [];
-    wordMovedToDeckSubscribers: (() => void)[] = [];
+    wordMovedToListedEvent: Event<[]> = new Event();
+    wordMovedToHiddenEvent: Event<[]> = new Event();
+    wordMovedToDeckEvent: Event<[]> = new Event();
 
     constructor(allWords: WordInfo[], exportSettings: ExportSettings | undefined) {
         this.allWords = allWords.reduce((prev, curr) => {
@@ -53,20 +54,20 @@ export class VisualizerController {
 
         // remove the word from the previous list
         let source: WordInfo[] | null = null;
-        let removeEvent: VisualizerControllerEventTypes | null = null;
+        let removeEvent: Event<[]> | null = null;
         if (wordInfo) {
             switch (wordInfo.state) {
             case CardState.Listed:
                 source = this.listedWords;
-                removeEvent = VisualizerControllerEventTypes.UpdateListedWords;
+                removeEvent = this.wordMovedToListedEvent;
                 break;
             case CardState.InDeck:
                 source = this.deckWords;
-                removeEvent = VisualizerControllerEventTypes.UpdateDeckWords;
+                removeEvent = this.wordMovedToDeckEvent;
                 break;
             case CardState.Hidden:
                 source = this.hiddenWords;
-                removeEvent = VisualizerControllerEventTypes.UpdateHiddenWords;
+                removeEvent = this.wordMovedToHiddenEvent;
                 break;
             default:
                 break;
@@ -74,24 +75,24 @@ export class VisualizerController {
         }
         if (source && removeEvent !== null) {
             source.splice(source.findIndex(x => x.word === word), 1);
-            this.emit(removeEvent);
+            removeEvent.trigger();
         }
 
         // add it to the new one
         let sink: WordInfo[] | null = null;
-        let addEvent: VisualizerControllerEventTypes | null = null;
+        let addEvent: Event<[]> | null = null;
         switch (newState) {
             case CardState.Listed:
                 sink = this.listedWords;
-                addEvent = VisualizerControllerEventTypes.UpdateListedWords;
+                addEvent = this.wordMovedToListedEvent;
                 break;
             case CardState.InDeck:
                 sink = this.deckWords;
-                addEvent = VisualizerControllerEventTypes.UpdateDeckWords;
+                addEvent = this.wordMovedToDeckEvent;
                 break;
             case CardState.Hidden:
                 sink = this.hiddenWords;
-                addEvent = VisualizerControllerEventTypes.UpdateHiddenWords;
+                addEvent = this.wordMovedToHiddenEvent;
                 break;
             default:
                 break;
@@ -104,7 +105,7 @@ export class VisualizerController {
             );
             const newIndex = reverseBinarySearch(sink.map(s => s.count), wordInfo.count);
             sink.splice(newIndex, 0, wordInfo);
-            this.emit(addEvent);
+            addEvent.trigger();
         }
     }
 
@@ -117,39 +118,5 @@ export class VisualizerController {
             }
         }
         return entry;
-    }
-
-    on(event: VisualizerControllerEventTypes, callback: () => void): void {
-        switch (event) {
-            case VisualizerControllerEventTypes.UpdateDeckWords:
-                this.wordMovedToDeckSubscribers.push(callback);
-            case VisualizerControllerEventTypes.UpdateHiddenWords:
-                this.wordMovedToHiddenSubscribers.push(callback);
-            case VisualizerControllerEventTypes.UpdateListedWords:
-                this.wordMovedToListedSubscribers.push(callback);
-            default:
-                return;
-        }
-    }
-
-    emit(event: VisualizerControllerEventTypes): void {
-        let subscribers: (() => void)[];
-        switch (event) {
-            case VisualizerControllerEventTypes.UpdateDeckWords:
-                subscribers = this.wordMovedToDeckSubscribers;
-                break;
-            case VisualizerControllerEventTypes.UpdateHiddenWords:
-                subscribers = this.wordMovedToHiddenSubscribers;
-                break;
-            case VisualizerControllerEventTypes.UpdateListedWords:
-                subscribers = this.wordMovedToListedSubscribers;
-                break;
-            default:
-                return;
-        }
-
-        for (const sub of subscribers) {
-            sub();
-        }
     }
 }
