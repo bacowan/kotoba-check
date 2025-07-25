@@ -177,10 +177,10 @@ const setupExportDialog = async () => {
 }
 
 const updatePaginationText = () => {
-    const currentPageText = document.getElementById("current-page");
+    const currentPageText = document.getElementById("current-page") as HTMLInputElement;
     const totalPagesText = document.getElementById("total-pages");
     if (currentPageText && totalPagesText) {
-        currentPageText.innerText = (currentDeckList.currentPage + 1).toString();
+        currentPageText.value = (currentDeckList.currentPage + 1).toString();
         totalPagesText.innerText = currentDeckList.totalPages.toString();
     }
 }
@@ -188,9 +188,16 @@ const updatePaginationText = () => {
 const refreshPaginationArea = () => {
     const prevPageButton = document.getElementById("prev-page-button");
     const nextPageButton = document.getElementById("next-page-button");
+    const currentPageText = document.getElementById("current-page") as HTMLInputElement;
 
-    if (prevPageButton && nextPageButton) {
+    if (prevPageButton && nextPageButton && currentPageText) {
         updatePaginationText();
+        currentPageText.onchange = (event) => {
+            if (event.target && event.target instanceof HTMLInputElement) {
+                currentDeckList.setCurrentPage(parseInt(event.target.value) - 1);
+                updatePaginationText();
+            }
+        }
         prevPageButton.onclick = () => {
             currentDeckList.movePage(-1);
             updatePaginationText();

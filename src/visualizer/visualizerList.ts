@@ -37,22 +37,21 @@ export class VisualizerList {
     }
 
     movePage(count: number) {
-        const newPageNumber = this.currentPage + count;
-        if (newPageNumber >= 0 && newPageNumber < this.totalPages) {
-            this.setCurrentPage(this.currentPage + count);
-        }
+        this.setCurrentPage(this.currentPage + count);
     }
 
     setCurrentPage(pageNumber: number) {
-        const firstElementIndex = pageNumber * this.pageSize;
-        const lastElementIndex = (pageNumber + 1) * this.pageSize;
-        
-        this.listElement?.replaceChildren();
-        for (const { word, count } of this.getWordList().slice(firstElementIndex, lastElementIndex)) {
-            this.addWordToUI(word, count);
-        }
+        if (pageNumber >= 0 && pageNumber < this.totalPages) {
+            const firstElementIndex = pageNumber * this.pageSize;
+            const lastElementIndex = (pageNumber + 1) * this.pageSize;
+            
+            this.listElement?.replaceChildren();
+            for (const { word, count } of this.getWordList().slice(firstElementIndex, lastElementIndex)) {
+                this.addWordToUI(word, count);
+            }
 
-        this.currentPage = pageNumber;
+            this.currentPage = pageNumber;
+        }
     }
 
     onPageResize(): void {

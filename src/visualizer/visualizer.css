@@ -261,3 +261,7 @@ label {
 .page-info {
   margin: 1em;
 }
+
+.page-input {
+  width: 4em;
+}
