@@ -258,5 +258,6 @@ chrome.storage.local.get(null).then(async (allData) => {
 chrome.storage.local.get(["tour_completed"]).then(async (data) => {
     if (data["tour_completed"] !== true) {
         startTour();
+        await chrome.storage.local.set({'tour_completed': true});
     }
 });
