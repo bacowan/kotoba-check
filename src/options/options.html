@@ -3,9 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="options.css">
+    <script src="options.js" defer></script>
     <title>Kotoba Check Options</title>
 </head>
 <body>
     <h1>Options</h1>
+    <button id="clear-data-button" class="danger-button">Clear Data</button>
+    <div id="confirm-section" class="confirm-section hidden">
+        <button id="confirm" class="danger-button">Confirm</button>
+        <button id="cancel" class="neutral-button">Cancel</button>
+    </div>
+    <p id="completed-message" class="hidden">Data for Kotoba Check has been cleared</p>
 </body>
 </html>

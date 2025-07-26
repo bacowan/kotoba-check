@@ -179,6 +179,12 @@ const setupExportDialog = async () => {
     }
 }
 
+const setupOptionsButton = () => {
+    document.getElementById('options-button')?.addEventListener('click', () => {
+        chrome.runtime.openOptionsPage();
+    });
+}
+
 const updatePaginationText = (currentPage: number, totalPages: number) => {
     const currentPageText = document.getElementById("current-page") as HTMLInputElement;
     const totalPagesText = document.getElementById("total-pages");
@@ -241,6 +247,7 @@ chrome.storage.local.get(null).then(async (allData) => {
 
     setupTabs();
     await setupExportDialog();
+    setupOptionsButton();
     setupPageResizeObserver();
     setupPaginationArea();
 });

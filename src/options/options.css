@@ -1,0 +1,33 @@
+html {
+    overflow: hidden
+}
+
+button {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 4px 10px;
+    font-size: 16px;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.danger-button {
+    background-color: #e53935;
+}
+
+.neutral-button {
+    background-color: #b1b1b1;
+}
+
+.confirm-section {
+    display: flex;
+    flex-direction: row;
+}
+
+.hidden {
+    display: none;
+}
