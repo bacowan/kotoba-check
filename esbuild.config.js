@@ -37,7 +37,7 @@ const __dirname = dirname(__filename);
                         to: ['./jmdict'],
                     },
                 ],
-            }),
+            })
         ]
     })
 })();

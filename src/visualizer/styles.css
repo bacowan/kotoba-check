@@ -17,7 +17,7 @@ header {
   flex-shrink: 0;
 }
 
-dialog h2 {
+.export-dialog h2 {
   text-align: center;
 }
 

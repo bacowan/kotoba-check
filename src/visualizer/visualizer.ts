@@ -7,6 +7,8 @@ import { exportDeck } from "./export";
 import { VisualizerController, VisualizerControllerEventTypes } from "./visualizerController";
 import { DeckWords, HiddenWords, ListedWords, VisualizerList } from "./visualizerList";
 import { TabUiController } from "./tabUiController";
+import Shepherd from "shepherd.js";
+import { startTour } from "./tour";
 
 const wordListElement = document.getElementById('word-list');
 const deckListElement = document.getElementById('deck-list');
@@ -250,4 +252,11 @@ chrome.storage.local.get(null).then(async (allData) => {
     setupOptionsButton();
     setupPageResizeObserver();
     setupPaginationArea();
+});
+
+
+chrome.storage.local.get(["tour_completed"]).then(async (data) => {
+    if (data["tour_completed"] !== true) {
+        startTour();
+    }
 });
