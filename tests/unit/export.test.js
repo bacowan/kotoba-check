@@ -35,6 +35,9 @@ describe('exportDeck', () => {
             true
         );
 
+        const parseCsvCalledParam = utils.parseCsv.mock.calls[0][0]; // 0,0 is the first param of the first call
+        expect(parseCsvCalledParam[0].length).toBe(1); // 0 is the first row
+        expect(parseCsvCalledParam[0][0]).toBe('header'); // 0,0 is the first column of thee first row
         expect(utils.download).toHaveBeenCalledWith(expect.any(String), "Correct");
     });
 });
