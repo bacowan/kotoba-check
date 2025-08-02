@@ -15,7 +15,7 @@ export interface WordInfo {
     word: string;
     count: number;
     state: CardState;
-    kuromojiId: number
+    kuromojiId: number;
 }
 
 export interface ExportSettings {
