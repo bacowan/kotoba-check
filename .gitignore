@@ -2,3 +2,5 @@ node_modules/
 dist/
 jmdict/jmdict.json
 jmdict/raw.json
+dist.crx
+dist.pem

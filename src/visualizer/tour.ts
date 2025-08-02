@@ -19,6 +19,11 @@ export const startTour = () => {
                 {
                     text: 'Next',
                     action: tour.next
+                },
+                {
+                    text: 'Cancel',
+                    action: tour.cancel,
+                    secondary: true
                 }
             ]
         },
@@ -34,6 +39,11 @@ export const startTour = () => {
                 {
                     text: 'Next',
                     action: tour.next
+                },
+                {
+                    text: 'Cancel',
+                    action: tour.cancel,
+                    secondary: true
                 }
             ]
         },
@@ -49,6 +59,11 @@ export const startTour = () => {
                 {
                     text: 'Next',
                     action: tour.next
+                },
+                {
+                    text: 'Cancel',
+                    action: tour.cancel,
+                    secondary: true
                 }
             ]
         },
@@ -64,6 +79,11 @@ export const startTour = () => {
                 {
                     text: 'Next',
                     action: tour.next
+                },
+                {
+                    text: 'Cancel',
+                    action: tour.cancel,
+                    secondary: true
                 }
             ]
         },
@@ -79,6 +99,11 @@ export const startTour = () => {
                 {
                     text: 'Next',
                     action: tour.next
+                },
+                {
+                    text: 'Cancel',
+                    action: tour.cancel,
+                    secondary: true
                 }
             ]
         },
@@ -94,6 +119,11 @@ export const startTour = () => {
                 {
                     text: 'Next',
                     action: tour.next
+                },
+                {
+                    text: 'Cancel',
+                    action: tour.cancel,
+                    secondary: true
                 }
             ]
         },
@@ -109,6 +139,11 @@ export const startTour = () => {
                 {
                     text: 'Next',
                     action: tour.next
+                },
+                {
+                    text: 'Cancel',
+                    action: tour.cancel,
+                    secondary: true
                 }
             ]
         },
@@ -118,7 +153,7 @@ export const startTour = () => {
             canClickTarget: false,
             buttons: [
                 {
-                    text: 'Next',
+                    text: 'End',
                     action: tour.next
                 }
             ]

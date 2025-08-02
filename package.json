@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "node esbuild.config.js",
-    "generate-jmdict": "node ./jmdict/parse.js"
+    "generate-jmdict": "node ./jmdict/parse.js",
+    "test:e2e": "jest ./e2e/extension.test.js"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,8 @@
     "esbuild": "^0.25.5",
     "esbuild-plugin-alias": "^0.2.1",
     "esbuild-plugin-copy": "^2.1.1",
+    "jest": "^30.0.5",
+    "puppeteer": "^24.15.0",
     "typescript": "^5.8.3"
   },
   "dependencies": {
