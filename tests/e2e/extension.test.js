@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { rowClickTest } = require('./row_click_test.js');
 
-const EXTENSION_PATH = path.join(__dirname, '../dist');
+const EXTENSION_PATH = path.join(__dirname, '../../dist');
 
 async function getExtensionId(browser) {
     const targets = await browser.targets();
