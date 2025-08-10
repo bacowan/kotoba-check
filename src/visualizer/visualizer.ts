@@ -9,25 +9,25 @@ import { DeckWordsUiController, HiddenWordsUiController, ListedWordsUiController
 import { TabUiController } from "./tabUiController";
 import { startTour } from "./tour";
 
-const wordListElement = document.getElementById('word-list');
+const newWordListElement = document.getElementById('new-word-list');
 const deckListElement = document.getElementById('deck-list');
 const hiddenListElement = document.getElementById('hidden-list');
 const mainElement = document.getElementById('main');
 
-let wordList: VisualizerListUiController;
+let newWordList: VisualizerListUiController;
 let deckList: VisualizerListUiController;
 let hiddenList: VisualizerListUiController;
 let currentDeckList: VisualizerListUiController;
 
 let deckTabUIController: TabUiController;
 let hiddenTabUIController: TabUiController;
-let listedTabUIController: TabUiController;
+let newWordTabUIController: TabUiController;
 
 let controller: VisualizerController;
 
 const setupPageResizeObserver = () => {
     const resizeObserver = new ResizeObserver((_: ResizeObserverEntry[]) => {
-        wordList.recalculatePages();
+        newWordList.recalculatePages();
         deckList.recalculatePages();
         hiddenList.recalculatePages();
     });
@@ -45,12 +45,12 @@ const setupTabs = () => {
     hiddenTabUIController = new TabUiController(
         document.getElementById('hidden-tab'),
         document.getElementById('hidden-table'));
-    listedTabUIController = new TabUiController(
+    newWordTabUIController = new TabUiController(
         document.getElementById('new-words-tab'),
         document.getElementById('new-words-table'));
-    deckTabUIController.setConnectedTabs(hiddenTabUIController, listedTabUIController);
-    hiddenTabUIController.setConnectedTabs(deckTabUIController, listedTabUIController);
-    listedTabUIController.setConnectedTabs(deckTabUIController, hiddenTabUIController);
+    deckTabUIController.setConnectedTabs(hiddenTabUIController, newWordTabUIController);
+    hiddenTabUIController.setConnectedTabs(deckTabUIController, newWordTabUIController);
+    newWordTabUIController.setConnectedTabs(deckTabUIController, hiddenTabUIController);
 
     deckTabUIController.onTabEnabledEvent.subscribe(() => {
         currentDeckList = deckList;
@@ -62,15 +62,15 @@ const setupTabs = () => {
         hiddenList.recalculatePages();
         updatePaginationText(hiddenList.currentPage, hiddenList.totalPages);
     });
-    listedTabUIController.onTabEnabledEvent.subscribe(() => {
-        currentDeckList = wordList;
-        wordList.recalculatePages();
-        updatePaginationText(wordList.currentPage, wordList.totalPages);
+    newWordTabUIController.onTabEnabledEvent.subscribe(() => {
+        currentDeckList = newWordList;
+        newWordList.recalculatePages();
+        updatePaginationText(newWordList.currentPage, newWordList.totalPages);
     });
 
     deckList.setupList();
     hiddenList.setupList();
-    wordList.setupList();
+    newWordList.setupList();
 }
 
 const idsToExporters: {[id: string]: ColumnExporter} = {};
@@ -236,10 +236,10 @@ chrome.storage.local.get(null).then(async (allData) => {
         deckList = new DeckWordsUiController(deckListElement, controller);
         deckList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => updatePaginationText(currentPage, totalPages));
     }
-    if (wordListElement) {
-        wordList = new ListedWordsUiController(wordListElement, controller);
-        wordList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => updatePaginationText(currentPage, totalPages));
-        currentDeckList = wordList;
+    if (newWordListElement) {
+        newWordList = new ListedWordsUiController(newWordListElement, controller);
+        newWordList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => updatePaginationText(currentPage, totalPages));
+        currentDeckList = newWordList;
     }
     if (hiddenListElement) {
         hiddenList = new HiddenWordsUiController(hiddenListElement, controller);
