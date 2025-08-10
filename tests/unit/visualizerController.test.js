@@ -3,6 +3,13 @@ const { VisualizerController } = require("../../src/visualizer/visualizerControl
 const { createWord } = require("./testUtils");
 
 describe('VisualizerController', () => {
+    beforeAll(() => {
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     describe('constructor', () => {
         it('should sort words by CardState', () => {
             const words = [
@@ -54,5 +61,23 @@ describe('VisualizerController', () => {
             expect(visualizerController.newWords[1].word).toBe('inDeck');
             expect(visualizerController.newWords[0].word).toBe('hidden');
         });
+
+        it('should call chrome.storage.local.set with the updated word', async () => {
+            const storageLocalGet = jest.spyOn(chrome.storage.local, 'set');
+
+            const inDeckWord = createWord('inDeck', CardState.InDeck);
+            const words = [
+                inDeckWord,
+                createWord('new', CardState.New),
+                createWord('hidden', CardState.Hidden)
+            ];
+            
+            const visualizerController = new VisualizerController(words);
+            await visualizerController.moveWord('inDeck', CardState.New);
+
+            expect(storageLocalGet).toHaveBeenCalled();
+            expect(storageLocalGet).toHaveBeenCalledWith({ 'word_inDeck': inDeckWord });
+        });
+
     });
 });
