@@ -4,10 +4,9 @@ import { ColumnExporter, ExportSettings, WordInfo } from "./types";
 import { AllColumnExporters, DefaultIncludedColumnExporters } from "./columnExporters";
 import { getDragAfterElement } from "./utils";
 import { exportDeck } from "./export";
-import { VisualizerController, VisualizerControllerEventTypes } from "./visualizerController";
-import { DeckWords, HiddenWords, ListedWords, VisualizerList } from "./visualizerList";
+import { VisualizerController } from "./visualizerController";
+import { DeckWordsUiController, HiddenWordsUiController, ListedWordsUiController, VisualizerListUiController } from "./visualizerListUiController";
 import { TabUiController } from "./tabUiController";
-import Shepherd from "shepherd.js";
 import { startTour } from "./tour";
 
 const wordListElement = document.getElementById('word-list');
@@ -15,10 +14,10 @@ const deckListElement = document.getElementById('deck-list');
 const hiddenListElement = document.getElementById('hidden-list');
 const mainElement = document.getElementById('main');
 
-let wordList: VisualizerList;
-let deckList: VisualizerList;
-let hiddenList: VisualizerList;
-let currentDeckList: VisualizerList;
+let wordList: VisualizerListUiController;
+let deckList: VisualizerListUiController;
+let hiddenList: VisualizerListUiController;
+let currentDeckList: VisualizerListUiController;
 
 let deckTabUIController: TabUiController;
 let hiddenTabUIController: TabUiController;
@@ -234,16 +233,16 @@ chrome.storage.local.get(null).then(async (allData) => {
     controller = new VisualizerController(words, exportSettings);
 
     if (deckListElement) {
-        deckList = new DeckWords(deckListElement, controller);
+        deckList = new DeckWordsUiController(deckListElement, controller);
         deckList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => updatePaginationText(currentPage, totalPages));
     }
     if (wordListElement) {
-        wordList = new ListedWords(wordListElement, controller);
+        wordList = new ListedWordsUiController(wordListElement, controller);
         wordList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => updatePaginationText(currentPage, totalPages));
         currentDeckList = wordList;
     }
     if (hiddenListElement) {
-        hiddenList = new HiddenWords(hiddenListElement, controller);
+        hiddenList = new HiddenWordsUiController(hiddenListElement, controller);
         hiddenList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => updatePaginationText(currentPage, totalPages));
     }
 

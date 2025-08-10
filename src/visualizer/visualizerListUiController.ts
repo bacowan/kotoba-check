@@ -2,13 +2,13 @@ import { CardState } from "../common/enums";
 import { Event } from "../common/event";
 import { hideSvg, plusSvg, showSvg } from "./svg";
 import { WordInfo } from "./types";
-import { VisualizerController, VisualizerControllerEventTypes } from "./visualizerController";
+import { VisualizerController } from "./visualizerController";
 
 export enum VisualizerListEventTypes {
     PageInfoChanged
 }
 
-export class VisualizerList {
+export class VisualizerListUiController {
     pageSize = 1;
     currentPage = 0;
     totalPages = 1;
@@ -96,7 +96,7 @@ export class VisualizerList {
     }
 }
 
-export class DeckWords extends VisualizerList {
+export class DeckWordsUiController extends VisualizerListUiController {
     constructor(listElement: HTMLElement, controller: VisualizerController) {
         super(controller => controller.wordMovedToDeckEvent, listElement, controller);
     }
@@ -147,7 +147,7 @@ export class DeckWords extends VisualizerList {
     }
 }
 
-export class ListedWords extends VisualizerList {
+export class ListedWordsUiController extends VisualizerListUiController {
     constructor(listElement: HTMLElement, controller: VisualizerController) {
         super(controller => controller.wordMovedToListedEvent, listElement, controller);
     }
@@ -206,7 +206,7 @@ export class ListedWords extends VisualizerList {
     }
 }
 
-export class HiddenWords extends VisualizerList {
+export class HiddenWordsUiController extends VisualizerListUiController {
     constructor(listElement: HTMLElement, controller: VisualizerController) {
         super(controller => controller.wordMovedToHiddenEvent, listElement, controller);
     }
