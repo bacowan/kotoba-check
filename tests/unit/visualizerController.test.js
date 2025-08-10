@@ -1,3 +1,5 @@
+jest.mock('../../jmdict/jmdict.json', () => ({"test": { definitions: ["def"], readings: ["read"] }}));
+
 const { CardState } = require("../../src/common/enums");
 const { VisualizerController } = require("../../src/visualizer/visualizerController");
 const { createWord } = require("./testUtils");
@@ -75,9 +77,141 @@ describe('VisualizerController', () => {
             const visualizerController = new VisualizerController(words);
             await visualizerController.moveWord('inDeck', CardState.New);
 
-            expect(storageLocalGet).toHaveBeenCalled();
             expect(storageLocalGet).toHaveBeenCalledWith({ 'word_inDeck': inDeckWord });
         });
 
+        it('deckWordsUpdatedEvent triggered when moving from deck words', async () => {
+            const words = [
+                createWord('inDeck', CardState.InDeck),
+                createWord('new', CardState.New),
+                createWord('hidden', CardState.Hidden)
+            ];
+            
+            const visualizerController = new VisualizerController(words);
+
+            let eventCalled = false;
+            visualizerController.deckWordsUpdatedEvent.subscribe(() => {
+                eventCalled = true;
+            });
+
+            await visualizerController.moveWord('inDeck', CardState.New);
+
+            expect(eventCalled).toBe(true);
+        });
+
+        it('newWordsUpdatedEvent triggered when moving from new words', async () => {
+            const words = [
+                createWord('inDeck', CardState.InDeck),
+                createWord('new', CardState.New),
+                createWord('hidden', CardState.Hidden)
+            ];
+            
+            const visualizerController = new VisualizerController(words);
+
+            let eventCalled = false;
+            visualizerController.newWordsUpdatedEvent.subscribe(() => {
+                eventCalled = true;
+            });
+
+            await visualizerController.moveWord('new', CardState.InDeck);
+
+            expect(eventCalled).toBe(true);
+        });
+
+        it('hiddenWordsUpdatedEvent triggered when moving from hidden words', async () => {
+            const words = [
+                createWord('inDeck', CardState.InDeck),
+                createWord('new', CardState.New),
+                createWord('hidden', CardState.Hidden)
+            ];
+            
+            const visualizerController = new VisualizerController(words);
+
+            let eventCalled = false;
+            visualizerController.hiddenWordsUpdatedEvent.subscribe(() => {
+                eventCalled = true;
+            });
+
+            await visualizerController.moveWord('hidden', CardState.New);
+
+            expect(eventCalled).toBe(true);
+        });
+
+        it('deckWordsUpdatedEvent triggered when moving to deck words', async () => {
+            const words = [
+                createWord('inDeck', CardState.InDeck),
+                createWord('new', CardState.New),
+                createWord('hidden', CardState.Hidden)
+            ];
+            
+            const visualizerController = new VisualizerController(words);
+
+            let eventCalled = false;
+            visualizerController.deckWordsUpdatedEvent.subscribe(() => {
+                eventCalled = true;
+            });
+
+            await visualizerController.moveWord('new', CardState.InDeck);
+
+            expect(eventCalled).toBe(true);
+        });
+
+        it('newWordsUpdatedEvent triggered when moving to new words', async () => {
+            const words = [
+                createWord('inDeck', CardState.InDeck),
+                createWord('new', CardState.New),
+                createWord('hidden', CardState.Hidden)
+            ];
+            
+            const visualizerController = new VisualizerController(words);
+
+            let eventCalled = false;
+            visualizerController.newWordsUpdatedEvent.subscribe(() => {
+                eventCalled = true;
+            });
+
+            await visualizerController.moveWord('inDeck', CardState.New);
+
+            expect(eventCalled).toBe(true);
+        });
+
+        it('hiddenWordsUpdatedEvent triggered when moving to hidden words', async () => {
+            const words = [
+                createWord('inDeck', CardState.InDeck),
+                createWord('new', CardState.New),
+                createWord('hidden', CardState.Hidden)
+            ];
+            
+            const visualizerController = new VisualizerController(words);
+
+            let eventCalled = false;
+            visualizerController.hiddenWordsUpdatedEvent.subscribe(() => {
+                eventCalled = true;
+            });
+
+            await visualizerController.moveWord('new', CardState.Hidden);
+
+            expect(eventCalled).toBe(true);
+        });
+    });
+
+    describe('getDictEntry', () => {
+        it('should return a word in the dictionary if it exists', () => {
+            const visualizerController = new VisualizerController([]);
+            const result = visualizerController.getDictEntry("test");
+            expect(result).toEqual({
+                definitions: ["def"],
+                readings: ["read"]
+            });
+        });
+
+        it('should return a blank entry if the entry does not exist', () => {
+            const visualizerController = new VisualizerController([]);
+            const result = visualizerController.getDictEntry("nope");
+            expect(result).toEqual({
+                definitions: [],
+                readings: []
+            });
+        });
     });
 });

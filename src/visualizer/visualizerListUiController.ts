@@ -98,7 +98,7 @@ export class VisualizerListUiController {
 
 export class DeckWordsUiController extends VisualizerListUiController {
     constructor(listElement: HTMLElement, controller: VisualizerController) {
-        super(controller => controller.wordMovedToDeckEvent, listElement, controller);
+        super(controller => controller.deckWordsUpdatedEvent, listElement, controller);
     }
 
     getWordList(): WordInfo[] {
@@ -149,7 +149,7 @@ export class DeckWordsUiController extends VisualizerListUiController {
 
 export class ListedWordsUiController extends VisualizerListUiController {
     constructor(listElement: HTMLElement, controller: VisualizerController) {
-        super(controller => controller.wordMovedToNewEvent, listElement, controller);
+        super(controller => controller.newWordsUpdatedEvent, listElement, controller);
     }
 
     getWordList(): WordInfo[] {
@@ -208,7 +208,7 @@ export class ListedWordsUiController extends VisualizerListUiController {
 
 export class HiddenWordsUiController extends VisualizerListUiController {
     constructor(listElement: HTMLElement, controller: VisualizerController) {
-        super(controller => controller.wordMovedToHiddenEvent, listElement, controller);
+        super(controller => controller.hiddenWordsUpdatedEvent, listElement, controller);
     }
 
     getWordList(): WordInfo[] {

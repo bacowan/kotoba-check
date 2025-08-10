@@ -21,9 +21,9 @@ export class VisualizerController {
     exportSettings: ExportSettings;
     maxCount: number;
 
-    wordMovedToNewEvent: Event<[]> = new Event();
-    wordMovedToHiddenEvent: Event<[]> = new Event();
-    wordMovedToDeckEvent: Event<[]> = new Event();
+    newWordsUpdatedEvent: Event<[]> = new Event();
+    hiddenWordsUpdatedEvent: Event<[]> = new Event();
+    deckWordsUpdatedEvent: Event<[]> = new Event();
 
     constructor(allWords: WordInfo[], exportSettings: ExportSettings | undefined) {
         this.allWords = allWords.reduce((prev, curr) => {
@@ -59,15 +59,15 @@ export class VisualizerController {
             switch (wordInfo.state) {
             case CardState.New:
                 source = this.newWords;
-                removeEvent = this.wordMovedToNewEvent;
+                removeEvent = this.newWordsUpdatedEvent;
                 break;
             case CardState.InDeck:
                 source = this.deckWords;
-                removeEvent = this.wordMovedToDeckEvent;
+                removeEvent = this.deckWordsUpdatedEvent;
                 break;
             case CardState.Hidden:
                 source = this.hiddenWords;
-                removeEvent = this.wordMovedToHiddenEvent;
+                removeEvent = this.hiddenWordsUpdatedEvent;
                 break;
             default:
                 break;
@@ -84,15 +84,15 @@ export class VisualizerController {
         switch (newState) {
             case CardState.New:
                 sink = this.newWords;
-                addEvent = this.wordMovedToNewEvent;
+                addEvent = this.newWordsUpdatedEvent;
                 break;
             case CardState.InDeck:
                 sink = this.deckWords;
-                addEvent = this.wordMovedToDeckEvent;
+                addEvent = this.deckWordsUpdatedEvent;
                 break;
             case CardState.Hidden:
                 sink = this.hiddenWords;
-                addEvent = this.wordMovedToHiddenEvent;
+                addEvent = this.hiddenWordsUpdatedEvent;
                 break;
             default:
                 break;
