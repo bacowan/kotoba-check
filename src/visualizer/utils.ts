@@ -44,7 +44,7 @@ export const parseCsv = (values: string[][]): string => {
     return ret;
 }
 
-export const reverseBinarySearch = <T>(arr: Array<T>, target: T) => {
+export const reverseBinarySearch = (arr: Array<number>, target: number) => {
     let left = 0;          // inclusive
     let right = arr.length; // exclusive
 

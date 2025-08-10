@@ -11,8 +11,4 @@ export class Event<Args extends any[]> {
       listener(...args);
     }
   }
-
-  clear(): void {
-    this.listeners.clear();
-  }
 }
