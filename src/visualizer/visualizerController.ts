@@ -103,7 +103,7 @@ export class VisualizerController {
             await chrome.storage.local.set(
                 { [wordKey]: wordInfo }
             );
-            // add it to the new list sorted
+            // add it sorted
             const newIndex = reverseBinarySearch(sink.map(s => s.count), wordInfo.count);
             sink.splice(newIndex, 0, wordInfo);
             addEvent.trigger();

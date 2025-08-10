@@ -31,13 +31,28 @@ describe('VisualizerController', () => {
             ];
             
             const visualizerController = new VisualizerController(words);
-
             await visualizerController.moveWord('inDeck', CardState.New);
 
             expect(visualizerController.deckWords.length).toBe(0);
             expect(visualizerController.newWords.length).toBe(2);
             expect(visualizerController.newWords.map(w => w.word)).toContain('new');
             expect(visualizerController.newWords.map(w => w.word)).toContain('inDeck');
+        });
+
+        it('should sort the new word by count in reverse order', async () => {
+            const words = [
+                createWord('inDeck', CardState.InDeck, 2),
+                createWord('new', CardState.New, 1),
+                createWord('hidden', CardState.New, 3)
+            ];
+            
+            const visualizerController = new VisualizerController(words);
+            await visualizerController.moveWord('inDeck', CardState.New);
+
+            expect(visualizerController.newWords.length).toBe(3);
+            expect(visualizerController.newWords[2].word).toBe('new');
+            expect(visualizerController.newWords[1].word).toBe('inDeck');
+            expect(visualizerController.newWords[0].word).toBe('hidden');
         });
     });
 });
