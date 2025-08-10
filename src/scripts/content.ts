@@ -36,7 +36,7 @@ const addWordsToDictionary = async (words: kuromoji.IpadicFeatures[]) => {
     if (wordCounts[word.word] === undefined) {
       wordCounts[word.word] = {
         count: 1,
-        state: CardState.Listed,
+        state: CardState.New,
         kuromojiId: word.kuromojiId
       };
     }

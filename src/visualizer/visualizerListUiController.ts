@@ -139,7 +139,7 @@ export class DeckWordsUiController extends VisualizerListUiController {
         const removeButton = document.createElement('button');
         removeButton.textContent = '－';
         removeButton.className = 'remove-button';
-        removeButton.onclick = async () => await this.controller.moveWord(word, CardState.Listed);
+        removeButton.onclick = async () => await this.controller.moveWord(word, CardState.New);
         removeCell.appendChild(removeButton);
         row.appendChild(removeCell);
     
@@ -249,7 +249,7 @@ export class HiddenWordsUiController extends VisualizerListUiController {
             const removeButton = document.createElement('button');
             removeButton.innerHTML = showSvg;
             removeButton.className = 'show-button';
-            removeButton.onclick = async () => await this.controller.moveWord(word, CardState.Listed);
+            removeButton.onclick = async () => await this.controller.moveWord(word, CardState.New);
             removeCell.appendChild(removeButton);
             row.appendChild(removeCell);
         

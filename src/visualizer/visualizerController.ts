@@ -33,7 +33,7 @@ export class VisualizerController {
 
         this.deckWords = allWords.filter(word => word.state === CardState.InDeck);
         this.hiddenWords = allWords.filter(word => word.state === CardState.Hidden);
-        this.listedWords = allWords.filter(word => word.state === CardState.Listed);
+        this.listedWords = allWords.filter(word => word.state === CardState.New);
 
         this.deckWords.sort((a, b) => b.count - a.count);
         this.hiddenWords.sort((a, b) => b.count - a.count);
@@ -57,7 +57,7 @@ export class VisualizerController {
         let removeEvent: Event<[]> | null = null;
         if (wordInfo) {
             switch (wordInfo.state) {
-            case CardState.Listed:
+            case CardState.New:
                 source = this.listedWords;
                 removeEvent = this.wordMovedToListedEvent;
                 break;
@@ -82,7 +82,7 @@ export class VisualizerController {
         let sink: WordInfo[] | null = null;
         let addEvent: Event<[]> | null = null;
         switch (newState) {
-            case CardState.Listed:
+            case CardState.New:
                 sink = this.listedWords;
                 addEvent = this.wordMovedToListedEvent;
                 break;
