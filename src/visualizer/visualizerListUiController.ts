@@ -149,11 +149,11 @@ export class DeckWordsUiController extends VisualizerListUiController {
 
 export class ListedWordsUiController extends VisualizerListUiController {
     constructor(listElement: HTMLElement, controller: VisualizerController) {
-        super(controller => controller.wordMovedToListedEvent, listElement, controller);
+        super(controller => controller.wordMovedToNewEvent, listElement, controller);
     }
 
     getWordList(): WordInfo[] {
-        return this.controller.listedWords;
+        return this.controller.newWords;
     }
 
     addWordToUI(word: string, count: number): void {

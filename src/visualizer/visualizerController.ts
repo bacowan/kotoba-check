@@ -10,18 +10,18 @@ const jmdictJson = jmdict as { [key: string]: JmdictEntry | undefined };
 export enum VisualizerControllerEventTypes {
     UpdateDeckWords,
     UpdateHiddenWords,
-    UpdateListedWords
+    UpdateNewWords
 }
 
 export class VisualizerController {
     allWords: {[word: string]: WordInfo}
     deckWords: WordInfo[];
     hiddenWords: WordInfo[];
-    listedWords: WordInfo[];
+    newWords: WordInfo[];
     exportSettings: ExportSettings;
     maxCount: number;
 
-    wordMovedToListedEvent: Event<[]> = new Event();
+    wordMovedToNewEvent: Event<[]> = new Event();
     wordMovedToHiddenEvent: Event<[]> = new Event();
     wordMovedToDeckEvent: Event<[]> = new Event();
 
@@ -33,11 +33,11 @@ export class VisualizerController {
 
         this.deckWords = allWords.filter(word => word.state === CardState.InDeck);
         this.hiddenWords = allWords.filter(word => word.state === CardState.Hidden);
-        this.listedWords = allWords.filter(word => word.state === CardState.New);
+        this.newWords = allWords.filter(word => word.state === CardState.New);
 
         this.deckWords.sort((a, b) => b.count - a.count);
         this.hiddenWords.sort((a, b) => b.count - a.count);
-        this.listedWords.sort((a, b) => b.count - a.count);
+        this.newWords.sort((a, b) => b.count - a.count);
 
         if (!exportSettings) {
             exportSettings = {
@@ -58,8 +58,8 @@ export class VisualizerController {
         if (wordInfo) {
             switch (wordInfo.state) {
             case CardState.New:
-                source = this.listedWords;
-                removeEvent = this.wordMovedToListedEvent;
+                source = this.newWords;
+                removeEvent = this.wordMovedToNewEvent;
                 break;
             case CardState.InDeck:
                 source = this.deckWords;
@@ -83,8 +83,8 @@ export class VisualizerController {
         let addEvent: Event<[]> | null = null;
         switch (newState) {
             case CardState.New:
-                sink = this.listedWords;
-                addEvent = this.wordMovedToListedEvent;
+                sink = this.newWords;
+                addEvent = this.wordMovedToNewEvent;
                 break;
             case CardState.InDeck:
                 sink = this.deckWords;
