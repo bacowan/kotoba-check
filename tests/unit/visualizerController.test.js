@@ -3,20 +3,41 @@ const { VisualizerController } = require("../../src/visualizer/visualizerControl
 const { createWord } = require("./testUtils");
 
 describe('VisualizerController', () => {
-    it('should sort words by CardState', () => {
-        const words = [
-            createWord('inDeck', CardState.InDeck),
-            createWord('new', CardState.New),
-            createWord('hidden', CardState.Hidden)
-        ];
-        
-        const visualizerController = new VisualizerController(words);
+    describe('constructor', () => {
+        it('should sort words by CardState', () => {
+            const words = [
+                createWord('inDeck', CardState.InDeck),
+                createWord('new', CardState.New),
+                createWord('hidden', CardState.Hidden)
+            ];
+            
+            const visualizerController = new VisualizerController(words);
 
-        expect(visualizerController.deckWords.length).toBe(1);
-        expect(visualizerController.deckWords[0].word).toBe('inDeck');
-        expect(visualizerController.hiddenWords.length).toBe(1);
-        expect(visualizerController.hiddenWords[0].word).toBe('hidden');
-        expect(visualizerController.newWords.length).toBe(1);
-        expect(visualizerController.newWords[0].word).toBe('new');
+            expect(visualizerController.deckWords.length).toBe(1);
+            expect(visualizerController.deckWords[0].word).toBe('inDeck');
+            expect(visualizerController.hiddenWords.length).toBe(1);
+            expect(visualizerController.hiddenWords[0].word).toBe('hidden');
+            expect(visualizerController.newWords.length).toBe(1);
+            expect(visualizerController.newWords[0].word).toBe('new');
+        });
+    });
+
+    describe('moveWord', () => {
+        it('should remove a word from one list and add it to the other', async () => {
+            const words = [
+                createWord('inDeck', CardState.InDeck),
+                createWord('new', CardState.New),
+                createWord('hidden', CardState.Hidden)
+            ];
+            
+            const visualizerController = new VisualizerController(words);
+
+            await visualizerController.moveWord('inDeck', CardState.New);
+
+            expect(visualizerController.deckWords.length).toBe(0);
+            expect(visualizerController.newWords.length).toBe(2);
+            expect(visualizerController.newWords.map(w => w.word)).toContain('new');
+            expect(visualizerController.newWords.map(w => w.word)).toContain('inDeck');
+        });
     });
 });

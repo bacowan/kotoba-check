@@ -7,5 +7,6 @@ export default {
   testEnvironment: "node", // use node instead of jsdom
   transform: {
     ...tsJestTransformCfg, // lets jest use typescript
-  }
+  },
+  setupFiles: ['./jest.setup.js'],
 };
