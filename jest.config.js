@@ -4,8 +4,8 @@ const tsJestTransformCfg = createDefaultPreset().transform;
 
 /** @type {import("jest").Config} **/
 export default {
-  testEnvironment: "node",
+  testEnvironment: "node", // use node instead of jsdom
   transform: {
-    ...tsJestTransformCfg,
-  },
+    ...tsJestTransformCfg, // lets jest use typescript
+  }
 };

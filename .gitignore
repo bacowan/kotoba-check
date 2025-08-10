@@ -4,3 +4,4 @@ jmdict/jmdict.json
 jmdict/raw.json
 dist.crx
 dist.pem
+coverage/
