@@ -20,7 +20,7 @@ const rowClickTest = async (page) => {
         await waitForElement({
             type: 'waitForElement',
             selectors: [
-                '#word-list tr'
+                '#new-word-list tr'
             ],
             operator: "==",
             count: 1
@@ -44,7 +44,7 @@ const rowClickTest = async (page) => {
         await waitForElement({
             type: 'waitForElement',
             selectors: [
-                '#word-list tr'
+                '#new-word-list tr'
             ],
             operator: "==",
             count: 0
@@ -116,7 +116,7 @@ const rowClickTest = async (page) => {
         await waitForElement({
             type: 'waitForElement',
             selectors: [
-                '#word-list tr'
+                '#new-word-list tr'
             ],
             operator: "==",
             count: 1
@@ -140,7 +140,7 @@ const rowClickTest = async (page) => {
         await waitForElement({
             type: 'waitForElement',
             selectors: [
-                '#word-list tr'
+                '#new-word-list tr'
             ],
             operator: "==",
             count: 0
@@ -212,7 +212,7 @@ const rowClickTest = async (page) => {
         await waitForElement({
             type: 'waitForElement',
             selectors: [
-                '#word-list tr'
+                '#new-word-list tr'
             ],
             operator: "==",
             count: 1
