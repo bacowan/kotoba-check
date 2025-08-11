@@ -33,3 +33,18 @@ There are two sets of tests: end to end tests and Unit tests.
 - To run the UI tests, run `npm run test:e2e`;
 - To run the Unit tests, run `npm run test:unit`. Note that this command also includes test coverage information;
 - To run both, run `npm run test`;
+
+## Third Party Libraries
+Kotoba check uses the following third party open source libraries. Their licenses can be found under `thirdPartyLicenses/`.
+
+- [jmdict-simplified](https://github.com/scriptin/jmdict-simplified): raw data used for dictionary definitions and pronounciations;
+- [kuromoji.js](https://github.com/takuyaa/kuromoji.js): parser for Japanese text;
+- [readability](https://github.com/mozilla/readability): used for extracting text on a webpage;
+- [shepherd.js](https://github.com/shipshapecode/shepherd): tool used to generate the initial tour;
+- [esbuild](https://github.com/evanw/esbuild): bundler;
+- [esbuild-plugin-alias](https://www.npmjs.com/package/esbuild-plugin-alias): used for bundling libraries that aren't in `node_modules` (namely `kuromoji.js`);
+- [esbuild-plugin-copy](https://github.com/LinbuduLab/esbuild-plugins): for including asset files in the final bundle;
+- [jest](https://github.com/jestjs/jest): testing framework;
+- [puppeteer](https://github.com/puppeteer/puppeteer): e2e testing;
+- [ts-jest](https://github.com/kulshekhar/ts-jest): allows for using jest for typescript files;
+- [typescript](https://github.com/microsoft/TypeScript): adds strong typing to JS.
