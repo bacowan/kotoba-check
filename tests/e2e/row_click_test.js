@@ -51,6 +51,23 @@ const rowClickTest = async (page) => {
         }, targetPage, timeout);
     }
     {
+        // the total number of pages in these tests should always be 1
+        const targetPage = page;
+        await waitForElement({
+            type: 'waitForElement',
+            selectors: [
+                '#total-pages'
+            ],
+            operator: "==",
+            count: 1
+        }, targetPage, timeout);
+        
+        const totalPagesText = await targetPage.$eval('#total-pages', el => el.textContent.trim());
+        if (totalPagesText !== '1') {
+            throw new Error(`#total-pages text is "${totalPagesText}", expected "1"`);
+        }
+    }
+    {
         const targetPage = page;
         await puppeteer.Locator.race([
             targetPage.locator('#deck-tab')
@@ -99,6 +116,23 @@ const rowClickTest = async (page) => {
         }, targetPage, timeout);
     }
     {
+        // the total number of pages in these tests should always be 1
+        const targetPage = page;
+        await waitForElement({
+            type: 'waitForElement',
+            selectors: [
+                '#total-pages'
+            ],
+            operator: "==",
+            count: 1
+        }, targetPage, timeout);
+        
+        const totalPagesText = await targetPage.$eval('#total-pages', el => el.textContent.trim());
+        if (totalPagesText !== '1') {
+            throw new Error(`#total-pages text is "${totalPagesText}", expected "1"`);
+        }
+    }
+    {
         const targetPage = page;
         await puppeteer.Locator.race([
             targetPage.locator('#new-words-tab')
@@ -123,6 +157,23 @@ const rowClickTest = async (page) => {
         }, targetPage, timeout);
     }
     {
+        // the total number of pages in these tests should always be 1
+        const targetPage = page;
+        await waitForElement({
+            type: 'waitForElement',
+            selectors: [
+                '#total-pages'
+            ],
+            operator: "==",
+            count: 1
+        }, targetPage, timeout);
+        
+        const totalPagesText = await targetPage.$eval('#total-pages', el => el.textContent.trim());
+        if (totalPagesText !== '1') {
+            throw new Error(`#total-pages text is "${totalPagesText}", expected "1"`);
+        }
+    }
+    {
         const targetPage = page;
         await puppeteer.Locator.race([
             targetPage.locator('td:nth-of-type(5) line')
@@ -145,6 +196,23 @@ const rowClickTest = async (page) => {
             operator: "==",
             count: 0
         }, targetPage, timeout);
+    }
+    {
+        // the total number of pages in these tests should always be 1
+        const targetPage = page;
+        await waitForElement({
+            type: 'waitForElement',
+            selectors: [
+                '#total-pages'
+            ],
+            operator: "==",
+            count: 1
+        }, targetPage, timeout);
+        
+        const totalPagesText = await targetPage.$eval('#total-pages', el => el.textContent.trim());
+        if (totalPagesText !== '1') {
+            throw new Error(`#total-pages text is "${totalPagesText}", expected "1"`);
+        }
     }
     {
         const targetPage = page;
@@ -193,6 +261,23 @@ const rowClickTest = async (page) => {
             operator: "==",
             count: 1
         }, targetPage, timeout);
+    }
+    {
+        // the total number of pages in these tests should always be 1
+        const targetPage = page;
+        await waitForElement({
+            type: 'waitForElement',
+            selectors: [
+                '#total-pages'
+            ],
+            operator: "==",
+            count: 1
+        }, targetPage, timeout);
+        
+        const totalPagesText = await targetPage.$eval('#total-pages', el => el.textContent.trim());
+        if (totalPagesText !== '1') {
+            throw new Error(`#total-pages text is "${totalPagesText}", expected "1"`);
+        }
     }
     {
         const targetPage = page;

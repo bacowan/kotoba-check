@@ -234,16 +234,28 @@ chrome.storage.local.get(null).then(async (allData) => {
 
     if (deckListElement) {
         deckList = new DeckWordsUiController(deckListElement, controller);
-        deckList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => updatePaginationText(currentPage, totalPages));
+        deckList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => {
+            if (currentDeckList === deckList) {
+                updatePaginationText(currentPage, totalPages);
+            }
+        });
     }
     if (newWordListElement) {
         newWordList = new ListedWordsUiController(newWordListElement, controller);
-        newWordList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => updatePaginationText(currentPage, totalPages));
+        newWordList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => {
+            if (currentDeckList === newWordList) {
+                updatePaginationText(currentPage, totalPages);
+            }
+        });
         currentDeckList = newWordList;
     }
     if (hiddenListElement) {
         hiddenList = new HiddenWordsUiController(hiddenListElement, controller);
-        hiddenList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => updatePaginationText(currentPage, totalPages));
+        hiddenList.pageInfoUpdatedEvent.subscribe((currentPage, totalPages) => {
+            if (currentDeckList === hiddenList) {
+                updatePaginationText(currentPage, totalPages);
+            }
+        });
     }
 
     setupTabs();
