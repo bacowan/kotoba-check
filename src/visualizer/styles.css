@@ -265,3 +265,27 @@ label {
 .page-input {
   width: 4em;
 }
+
+/* Spinner Overlay */
+.loading-spinner-overlay {
+  position: fixed;
+  z-index: 9999;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Spinner Animation */
+.spinner {
+  border: 8px solid #eee;
+  border-top: 8px solid #3498db;
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

@@ -1,5 +1,3 @@
-import { CardState } from "../common/enums";
-import { hideSvg, plusSvg, showSvg } from "./svg";
 import { ColumnExporter, ExportSettings, WordInfo } from "./types";
 import { AllColumnExporters, DefaultIncludedColumnExporters } from "./columnExporters";
 import { getDragAfterElement } from "./utils";
@@ -216,9 +214,15 @@ const setupPaginationArea = () => {
     }
 }
 
+const hideLoadingSpinner = () => {
+    const loadingSpinner = document.getElementById('loading-spinner');
+    if (loadingSpinner) {
+        loadingSpinner.style.display = 'none';
+    }
+}
+
 // retrieve all data that was stored by the content script
 chrome.storage.local.get(null).then(async (allData) => {
-
     const words: WordInfo[] = Object.keys(allData)
         // exclude url data
         .filter(key => key.startsWith('word_'))
@@ -229,7 +233,6 @@ chrome.storage.local.get(null).then(async (allData) => {
             state: allData[key].state,
             kuromojiId: allData[key].kuromojiId }));
     const exportSettings = allData["export_settings"] as ExportSettings | undefined;
-
     controller = new VisualizerController(words, exportSettings);
 
     if (deckListElement) {
@@ -263,6 +266,7 @@ chrome.storage.local.get(null).then(async (allData) => {
     setupOptionsButton();
     setupPageResizeObserver();
     setupPaginationArea();
+    hideLoadingSpinner();
 });
 
 
