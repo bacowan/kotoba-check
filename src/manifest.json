@@ -41,6 +41,9 @@
       "resources": [
         "dict/*",
         "visualizer/visualizer.html"
+      ],
+      "matches": [
+        "<all_urls>"
       ]
     }
   ]
